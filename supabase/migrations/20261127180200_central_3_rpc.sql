@@ -472,7 +472,7 @@ begin
 end $$;
 
 create or replace function central_atendimento.entidade_ok(p text) returns boolean
-language sql immutable as $$
+language sql immutable set search_path = central_atendimento as $$
   select p in ('areas','equipes_venda','solicitantes','atendentes','filas','fila_atendentes','horarios','feriados','assuntos','respostas_rapidas','config');
 $$;
 

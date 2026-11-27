@@ -42,6 +42,13 @@ docs/                  modelo de dados, API (funções ca_*) e formato dos fluxo
 - **Notas internas** entre atendentes nunca chegam ao consultor (nem pelo Realtime).
 - **Fora do expediente** o pedido entra na fila marcado `fora_horario` e o consultor recebe aviso.
 
+## Situação
+
+- 27/11/2026: migrações 1 a 6 aplicadas no projeto Araguaia MC (no Supabase a 3 entrou em duas partes,
+  `central_3_rpc` e `central_3b_admin_remover`, e há uma 7 de ajuste de search_path). Banco vazio de chamados,
+  consultores e atendentes; áreas, filas, assuntos, horários, fluxos e 155 equipes de venda carregados.
+- Próximo passo: cadastrar os atendentes (e-mail, área, papel, filas) pelo painel ou por `ca_admin_salvar`.
+
 ## Testar
 
 ```bash

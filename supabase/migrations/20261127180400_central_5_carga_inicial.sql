@@ -193,8 +193,8 @@ end $$;
 revoke all on function central_atendimento.fechar_abandonados() from public, anon, authenticated;
 
 do $$ begin
-  if exists (select 1 from pg_namespace where nspname = 'cron') then
-    perform cron.unschedule(jobid) from cron.job where jobname = 'central_atendimento_abandonados';
+  if exists (select 1 from pg_namespace where nspname = 'cron')
+     and not exists (select 1 from cron.job where jobname = 'central_atendimento_abandonados') then
     perform cron.schedule('central_atendimento_abandonados', '*/10 * * * *', 'select central_atendimento.fechar_abandonados()');
   end if;
 end $$;
