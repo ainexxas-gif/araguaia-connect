@@ -292,8 +292,9 @@ table.tb{border-collapse:collapse;width:100%;font-size:14px}
 .msg.nota{align-self:stretch;max-width:none;background:var(--notaFundo);border:1px dashed var(--ambar)}
 .msg.nota .au{color:var(--ambarTx)}
 textarea.modoNota{background:var(--notaFundo);border-color:var(--ambar)}
-.chk{color:var(--tx3);font-size:12px;letter-spacing:-3px;margin-left:4px}
-.chk.lida{color:var(--azul2)}
+.chk{color:#9AA6B2;font-size:14px;font-weight:800;letter-spacing:-4px;margin-left:5px;padding-right:4px}
+.chk.lida{color:#1A8CFF}
+[data-theme=dark] .chk.lida{color:#53B4FF}
 .anexo{margin-top:4px;padding:4px 8px;border-radius:6px;background:var(--card2);font-size:13px;color:var(--tx2)}
 .escolhas.col{flex-direction:column;align-items:stretch}
 .escolhas.col button{display:flex;align-items:center;gap:6px;text-align:left;white-space:normal;padding:6px 12px}
@@ -374,3 +375,16 @@ textarea.modoNota{background:var(--notaFundo);border-color:var(--ambar)}
 @media (min-width:481px) and (max-width:640px){.marca .ic{width:30px;height:30px}}
 .filasAgora{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
 .filasAgora .tag{flex:none}
+
+/* anexos */
+.cv-comp .linha .clipe{flex:0 0 auto;font-size:18px;padding:0 12px}
+.msg .anexo-img{display:block;padding:0;border:0;background:rgba(0,0,0,.05);cursor:zoom-in;margin:4px 0;border-radius:8px;overflow:hidden;min-width:120px;min-height:60px;max-width:260px}
+.msg .anexo-img img{display:block;max-width:260px;max-height:260px;width:auto;height:auto}
+.msg .anexo-img.falhou::after{content:"Foto indisponível";display:block;padding:16px 12px;font-size:13px;color:var(--tx3)}
+.msg .anexo-arq{display:flex;align-items:center;gap:10px;max-width:280px;padding:6px 12px 6px 6px;margin:4px 0;border:1px solid var(--borda2);border-radius:8px;background:var(--card);cursor:pointer;text-align:left;font:inherit;color:inherit;white-space:normal}
+.msg .anexo-arq:hover{border-color:var(--azul2)}
+.anexo-ic{flex:0 0 auto;width:38px;height:38px;border-radius:6px;background:var(--azul);color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.anexo-nome{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+
+.notaChip{display:inline-block;padding:1px 8px;border-radius:999px;color:#fff;font-size:13px}
+.notaChip.ok{background:#2F6B00}.notaChip.bom{background:#4A8C00}.notaChip.med{background:#A06A00}.notaChip.ruim{background:#B3261E}

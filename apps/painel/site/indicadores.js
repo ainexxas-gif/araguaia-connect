@@ -93,7 +93,7 @@ function desenha(){
     kpi("Concluídos em até 30 min",'<span class="'+cls(r.ate30,.9,.7)+'">'+A.pct(r.ate30)+'</span>',"da abertura ao encerramento")+
     kpi("Resolvidos no 1º contato",'<span class="'+cls(r.fcr,.8,.6)+'">'+A.pct(r.fcr)+'</span>',"resolvido e sem novo chamado do assunto em 72 h")+
     kpi("Desistência",'<span class="'+(r.desist==null?"":r.desist<=.05?"t-ok":r.desist<=.1?"t-at":"t-rd")+'">'+A.pct(r.desist,1)+'</span>',A.num(r.desistencias)+" saíram antes de serem atendidos")+
-    kpi("Avaliação média",r.avalMedia==null?"—":'<span class="'+cls(r.avalMedia,4.5,4)+'">'+A.num(r.avalMedia,1)+'</span>',A.num(r.avalN)+" notas · "+A.pct(r.avalResp)+" responderam")+
+    kpi("Avaliação média",r.avalMedia==null?"—":'<span class="'+cls(r.avalMedia,9,8)+'">'+A.num(r.avalMedia,1)+'</span>',A.num(r.avalN)+" notas · "+A.pct(r.avalResp)+" responderam")+
     kpi("Com nº do documento",A.pct(r.comDoc),A.pct(r.transf)+" tiveram repasse ou transferência")+
   '</div>'+
   '<div class="g2">'+
@@ -110,7 +110,7 @@ function desenha(){
     card("Resultado do encerramento",resultados(rows))+
   '</div>'+
   '<div class="g1">'+card("Por atendente",tabAtend(rows),'<span class="acoesTab"><button class="bt sm" data-x="csvAt">Baixar Excel</button><button class="bt sm" data-x="print">Imprimir</button></span>')+'</div>'+
-  '<div class="g1">'+card("Avaliações (1 a 5)",tabAval(rows),'<span class="acoesTab"><button class="bt sm" data-x="csvAv">Baixar Excel</button><button class="bt sm" data-x="print">Imprimir</button></span>')+'</div>'+
+  '<div class="g1">'+card("Avaliações (1 a 10)",tabAval(rows),'<span class="acoesTab"><button class="bt sm" data-x="csvAv">Baixar Excel</button><button class="bt sm" data-x="print">Imprimir</button></span>')+'</div>'+
   '<div class="g1">'+card("Base de chamados do recorte",'<p class="sub" style="margin:0">Uma linha por chamado ('+A.num(rows.length)+' no recorte), com espera e atendimento separados, resultado, nº do documento, 1º contato e avaliação. Dado pessoal: só matrícula e nome do consultor.</p>','<span class="acoesTab"><button class="bt sm" data-x="csvBase">Baixar Excel</button></span>')+'</div>'+
   '<div class="g1">'+card("Como cada número é calculado",metodologia())+'</div>';
   $("#inCorpo").innerHTML=h;
@@ -175,12 +175,12 @@ function tabAtend(rows){
 }
 function linhasAval(rows){return rows.filter(function(r){return r.avaliacao!=null;}).sort(function(a,b){return new Date(b.encerrado_em)-new Date(a.encerrado_em);});}
 function tabAval(rows){
-  var l=linhasAval(rows),dist=[0,0,0,0,0];l.forEach(function(r){dist[r.avaliacao-1]++;});
+  var l=linhasAval(rows),dist=[0,0,0,0,0,0,0,0,0,0];l.forEach(function(r){if(r.avaliacao>=1&&r.avaliacao<=10)dist[r.avaliacao-1]++;});
   var max=Math.max.apply(null,dist.concat([1]));
-  var cores=[COR.rd,COR.rd,COR.at,COR.b,COR.b];
-  return '<div class="barras" style="max-width:520px;margin-bottom:12px">'+[5,4,3,2,1].map(function(n){return '<div class="bar" style="cursor:default"><span class="nm estrelas">'+"★".repeat(n)+'</span><span class="trilho"><i style="width:'+(100*dist[n-1]/max)+'%;background:'+cores[n-1]+'"></i></span><span class="vl">'+A.num(dist[n-1])+'</span></div>';}).join("")+'</div>'+
+  var cores=[COR.rd,COR.rd,COR.rd,COR.rd,COR.at,COR.at,COR.b,COR.b,COR.b,COR.b];
+  return '<div class="barras" style="max-width:520px;margin-bottom:12px">'+[10,9,8,7,6,5,4,3,2,1].map(function(n){return '<div class="bar" style="cursor:default"><span class="nm">Nota '+n+'</span><span class="trilho"><i style="width:'+(100*dist[n-1]/max)+'%;background:'+cores[n-1]+'"></i></span><span class="vl">'+A.num(dist[n-1])+'</span></div>';}).join("")+'</div>'+
     '<div class="tabWrap" style="max-height:420px"><table class="tb"><thead><tr><th>Data</th><th>Protocolo</th><th>Solicitante</th><th>Assunto</th><th>Atendente</th><th class="num">Nota</th><th>Comentário</th></tr></thead><tbody>'+
-    l.slice(0,200).map(function(r){return '<tr><td>'+A.data(r.encerrado_em)+'</td><td class="id">'+esc(r.protocolo)+'</td><td>'+esc(r.solicitante)+'<div class="sub">'+esc(r.equipe||"")+'</div></td><td>'+esc(nomeDe("assunto_id",r.assunto_id))+'</td><td>'+esc(nomeDe("atendente_id",r.atendente_id))+'</td><td class="num estrelas">'+"★".repeat(r.avaliacao)+'</td><td>'+esc(r.comentario||"")+'</td></tr>';}).join("")+'</tbody></table></div>'+
+    l.slice(0,200).map(function(r){return '<tr><td>'+A.data(r.encerrado_em)+'</td><td class="id">'+esc(r.protocolo)+'</td><td>'+esc(r.solicitante)+'<div class="sub">'+esc(r.equipe||"")+'</div></td><td>'+esc(nomeDe("assunto_id",r.assunto_id))+'</td><td>'+esc(nomeDe("atendente_id",r.atendente_id))+'</td><td class="num"><b>'+r.avaliacao+'</b></td><td>'+esc(r.comentario||"")+'</td></tr>';}).join("")+'</tbody></table></div>'+
     (l.length>200?'<p class="sub">Mostrando as 200 mais recentes de '+A.num(l.length)+'. O Excel traz todas.</p>':"");
 }
 function metodologia(){return '<ul class="metod">'+
@@ -189,7 +189,7 @@ function metodologia(){return '<ul class="metod">'+
   '<li><b>Concluídos em até 30 min:</b> encerrados com até 30 min entre a entrada na fila e o encerramento, sobre o total de encerrados.</li>'+
   '<li><b>Resolvido no 1º contato:</b> encerrado como "Resolvido" e sem novo chamado do mesmo consultor no mesmo assunto nas 72 h seguintes, sobre o total de encerrados. <i>Janela de 72 h a validar com as áreas (parâmetro em Cadastros).</i></li>'+
   '<li><b>Desistência:</b> chamados em que o consultor saiu antes de ser atendido (cancelou na fila ou abandonou o fluxo por mais de 30 min), sobre o total.</li>'+
-  '<li><b>Avaliação:</b> nota de 1 a 5 enviada no app após o encerramento; média só de quem respondeu. % responderam = avaliações ÷ encerrados.</li>'+
+  '<li><b>Avaliação:</b> nota de 1 a 10 enviada no app após o encerramento; média só de quem respondeu. % responderam = avaliações ÷ encerrados.</li>'+
   '<li><b>Supervisor</b> vê só a própria área; administração vê todas. As mesmas regras estão na função ca_indicadores do banco.</li>'+
   '<li><b>Medianas</b> em vez de médias: um chamado esquecido no fim de semana não distorce o número do mês.</li>'+
   '<li>Horários no fuso de Brasília. Recorte abaixo de 30 chamados mostra aviso de amostra pequena.</li></ul>';}
@@ -198,7 +198,7 @@ function metodologia(){return '<ul class="metod">'+
 function csvAtendentes(){var rows=M.filtrar(S.rows,S.f);A.baixarCsv("indicadores_atendentes","Indicadores por atendente",recorteTxt(),
   ["Atendente","Chamados","Espera mediana (min)","Atendimento mediano (min)","Até 30 min (%)","1º contato (%)","Repasse/transf. (%)","Avaliação média","Nº de avaliações"],
   linhasAtend(rows).map(function(x){return [nomeDe("atendente_id",x.chave),x.total,fmt(x.esperaMed),fmt(x.atendMed),fmtP(x.ate30),fmtP(x.fcr),fmtP(x.transf),x.avalMedia==null?"":A.num(x.avalMedia,2),x.avalN];}));}
-function csvAvaliacoes(){var rows=M.filtrar(S.rows,S.f);A.baixarCsv("avaliacoes","Avaliações (1 a 5)",recorteTxt(),
+function csvAvaliacoes(){var rows=M.filtrar(S.rows,S.f);A.baixarCsv("avaliacoes","Avaliações (1 a 10)",recorteTxt(),
   ["Data","Protocolo","Matrícula","Solicitante","Equipe","Área","Fila","Assunto","Atendente","Nota","Comentário"],
   linhasAval(rows).map(function(r){return [A.dataHora(r.encerrado_em),r.protocolo,r.matricula,r.solicitante,r.equipe||"",r.area,r.fila,r.assunto,r.atendente||"",r.avaliacao,r.comentario||""];}));}
 function csvAssuntos(){var rows=M.filtrar(S.rows,S.f),gr=M.agrupar(rows,"assunto_id"),tot=rows.length,totT=gr.reduce(function(a,g){return a+g.abertoSoma;},0)||1;

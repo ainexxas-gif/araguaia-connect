@@ -125,7 +125,7 @@ var porSol={};
           if(enc>AGORA){c.status=rnd()<.25?"aguardando_solicitante":"em_atendimento";}
           else{c.encerrado_em=iso(enc);c.resultado=pesos(RESULT);
             if(s.documento_tipo&&(c.resultado==="resolvido"||c.resultado==="resolvido_parcial")&&(s.documento_obrigatorio_no_encerramento||rnd()<.6)){c.documento_tipo=s.documento_tipo;c.documento_numero=String(4500000000+Math.floor(rnd()*99999999)).slice(0,10);}
-            if(rnd()<.56){var nota=+pesos({5:62,4:22,3:9,2:4,1:3});DB.avaliacoes.push({chamado_id:c.id,nota:nota,comentario:nota<=2?pick(["Demorou muito para responder.","Precisei explicar duas vezes.","Não resolveu, tive que abrir outro."]):nota===5&&rnd()<.25?pick(["Rápido e certeiro, obrigado!","Excelente, resolveu na hora.","Muito atenciosa."]):null,criada_em:iso(enc+5*MIN)});}}}}
+            if(rnd()<.56){var nota=+pesos({10:40,9:22,8:14,7:9,6:5,5:4,4:2,3:2,2:1,1:1});DB.avaliacoes.push({chamado_id:c.id,nota:nota,comentario:nota<=4?pick(["Demorou muito para responder.","Precisei explicar duas vezes.","Não resolveu, tive que abrir outro."]):nota>=9&&rnd()<.25?pick(["Rápido e certeiro, obrigado!","Excelente, resolveu na hora.","Muito atenciosa."]):null,criada_em:iso(enc+5*MIN)});}}}}
       var ex=respostasExemplo(s);c.respostas=ex.respostas;c.resumo=ex.resumo;c.resumo_itens=ex.itens;
       c.ultima_msg_em=c.encerrado_em||c.primeira_resposta_em||c.entrou_fila_em;c.ultima_msg_autor=c.encerrado_em?"sistema":c.primeira_resposta_em?"atendente":"bot";
       if(c.status==="aguardando_solicitante")c.ultima_msg_autor="atendente";
@@ -190,7 +190,7 @@ function garantirMensagens(c){
       msg(c,"solicitante",pick(["É o 1002.","Pode ser 45 t.","Ok, aguardo.","Isso mesmo, obrigado."]),{em:iso(tr+(fim-tr)*.5),lida:!!c.encerrado_em});}
     if(c.status==="em_atendimento"&&c.ultima_msg_autor==="solicitante")msg(c,"solicitante",pick(["Conseguiu ver?","Preciso disso até as 16h, pode ser?","Mandei o número certo agora: 4501239876"]),{em:c.ultima_msg_em,lida:false});
     if(c.encerrado_em){msg(c,"atendente",pick(["Pronto, está feito!","Ajustado no sistema. Qualquer coisa me chama.","Feito! A OV já está liberada."]),{em:iso(fim-30000),atendente_id:aid,lida:true});
-      msg(c,"sistema","Atendimento encerrado. Como foi? Avalie de 1 a 5.",{em:c.encerrado_em,lida:true});
+      msg(c,"sistema","Atendimento encerrado. Como foi? Dê uma nota de 1 a 10.",{em:c.encerrado_em,lida:true});
       DB.eventos.push({id:seq.eventos++,chamado_id:c.id,tipo:"encerrado",motivo:c.resultado,de_fila_id:null,para_fila_id:null,de_atendente_id:null,para_atendente_id:null,por_email:null,criado_em:c.encerrado_em});}}
   if(c.status==="desistiu")DB.eventos.push({id:seq.eventos++,chamado_id:c.id,tipo:"desistencia",motivo:c.desistencia_motivo||"saiu da fila",de_fila_id:null,para_fila_id:null,de_atendente_id:null,para_atendente_id:null,por_email:null,criado_em:c.desistencia_em});
   DB.eventos.unshift({id:0,chamado_id:c.id,tipo:"entrou_fila",motivo:null,de_fila_id:null,para_fila_id:c.fila_id,de_atendente_id:null,para_atendente_id:null,por_email:null,criado_em:c.entrou_fila_em});
@@ -265,7 +265,7 @@ var API={
     if(!txt(p.p_conteudo)&&!p.p_anexo)throw erro("23514","Mensagem vazia.");
     if(!p.p_interna){if(c.status==="na_fila"){c.atendente_id=a.id;c.status="em_atendimento";c.assumido_em=c.assumido_em||iso(Date.now());evento(c,"assumido",null,null,null,null,a.id);}
       else if(c.atendente_id!==a.id&&a.papel==="atendente")throw erro("42501","Este chamado está com outro atendente.");}
-    var m=msg(c,"atendente",txt(p.p_conteudo),{atendente_id:a.id,interna:!!p.p_interna});
+    var an=p.p_anexo||{};var m=msg(c,"atendente",txt(p.p_conteudo)||null,{atendente_id:a.id,interna:!!p.p_interna,anexo_path:an.path,anexo_nome:an.nome,anexo_mime:an.mime,tipo:an.path?(/^image\//.test(an.mime||"")?"imagem":"arquivo"):"texto"});
     if(!p.p_interna)simularResposta(c);
     return {id:m.id,autor:"atendente",criada_em:m.criada_em};},
   ca_marcar_lidas:function(p){var c=chamado(p.p_chamado),n=0;DB.mensagens.forEach(function(m){if(m.chamado_id===c.id&&!m.lida_em&&m.autor==="solicitante"){m.lida_em=iso(Date.now());n++;}});return n;},
@@ -299,8 +299,8 @@ var API={
     if(s.documento_obrigatorio_no_encerramento&&(p.p_resultado==="resolvido"||p.p_resultado==="resolvido_parcial")&&!txt(p.p_documento_numero))throw erro("23514","Informe o nº do documento ("+(s.documento_tipo||"documento")+").");
     c.status="encerrado";c.resultado=p.p_resultado;c.resultado_obs=txt(p.p_obs)||null;c.documento_numero=txt(p.p_documento_numero)||null;
     c.documento_tipo=p.p_documento_tipo||(c.documento_numero?s.documento_tipo:null);c.atendente_id=c.atendente_id||eu().id;c.assumido_em=c.assumido_em||iso(Date.now());c.encerrado_em=iso(Date.now());
-    evento(c,"encerrado",p.p_resultado);msg(c,"sistema","Atendimento encerrado. Como foi? Avalie de 1 a 5.");distribuir(c.fila_id);
-    var cc=c;setTimeout(function(){if(rnd()<.7&&!DB.avaliacoes.some(function(x){return x.chamado_id===cc.id;}))DB.avaliacoes.push({chamado_id:cc.id,nota:+pesos({5:70,4:20,3:10}),comentario:null,criada_em:iso(Date.now())});},8000);
+    evento(c,"encerrado",p.p_resultado);msg(c,"sistema","Atendimento encerrado. Como foi? Dê uma nota de 1 a 10.");distribuir(c.fila_id);
+    var cc=c;setTimeout(function(){if(rnd()<.7&&!DB.avaliacoes.some(function(x){return x.chamado_id===cc.id;}))DB.avaliacoes.push({chamado_id:cc.id,nota:+pesos({10:50,9:25,8:15,7:10}),comentario:null,criada_em:iso(Date.now())});},8000);
     return chamadoJson(c);},
   ca_prioridade:function(p){var a=eu(),c=chamado(p.p_chamado);if(a.papel==="atendente")throw erro("42501","Só supervisores mudam a prioridade.");
     c.prioridade=Math.max(0,Math.min(9,+p.p_prioridade||0));evento(c,"prioridade",p.p_motivo||String(c.prioridade));return chamadoJson(c);},

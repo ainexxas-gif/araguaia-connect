@@ -5,7 +5,7 @@
   --fundo:#EEF2F7;--card:#FFFFFF;--card2:#F0F4FA;--borda:#D9E2EC;
   --hdr:#003D7C;--hdr-tx:#FFFFFF;--hdr-tx2:#B9CCE4;
   --chat:#E9EEF4;--eu:#DCF2C4;--eu-tx:#1A1A1A;--ele:#FFFFFF;--bot:#F0F4FA;
-  --chk:#7A8794;--chk-lido:#1A73E8;
+  --chk:#9AA6B2;--chk-lido:#1A8CFF;
   --foco:0 0 0 3px rgba(26,90,158,.35);
   --raio:12px;--raio-p:8px;
   --sombra:0 1px 2px rgba(0,30,60,.08),0 2px 8px rgba(0,30,60,.06);
@@ -16,7 +16,7 @@
   --fundo:#0B1522;--card:#132235;--card2:#182A40;--borda:#26394F;
   --hdr:#0E1B2B;--hdr-tx:#FFFFFF;--hdr-tx2:#A9BCD3;
   --chat:#0F1C2C;--eu:#24461A;--eu-tx:#EAF6DE;--ele:#182A40;--bot:#1B2F47;
-  --chk:#8C9AAA;--chk-lido:#6CB4FF;
+  --chk:#8C9AAA;--chk-lido:#53B4FF;
   --sombra:none;
 }
 *{box-sizing:border-box}
@@ -119,7 +119,7 @@ body.ocupado{cursor:progress}
 [data-theme=dark] .st-canc{background:#2A3746;color:#C3CCD6}
 [data-theme=dark] .st-aval{background:#7FB2F0;color:#0B1522}
 .prot{color:var(--tx3);font-size:12.5px;white-space:nowrap}
-.chk{color:var(--chk);font-size:12px;letter-spacing:-3px;margin-right:3px}
+.chk{color:var(--chk);font-size:14px;font-weight:800;letter-spacing:-4px;margin-right:6px}
 .chk.lido{color:var(--chk-lido)}
 .vazio{padding:28px 20px;text-align:center;color:var(--tx2)}
 .vazio strong{display:block;font-size:16px;color:var(--tx);margin-bottom:4px}
@@ -232,15 +232,16 @@ body.ocupado{cursor:progress}
 .avaliar{display:flex;flex-direction:column;gap:10px}
 .av-tit{font-weight:700;font-size:16px;text-align:center}
 .notas{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.nota{border:1.5px solid var(--borda);background:var(--card);border-radius:12px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px 2px}
+.notas-legenda{display:flex;justify-content:space-between;font-size:12px;color:var(--tx3);margin:4px 2px 0}
+.nota{border:1.5px solid var(--borda);background:var(--card);border-radius:12px;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px 2px}
 .nota strong{font-size:20px}
 .nota span{font-size:11.5px;color:var(--tx3);line-height:1.1;text-align:center}
 .nota.sel{border-color:transparent;color:#fff}
 .nota.sel span{color:#fff}
-.nota.n1.sel,.nota.n2.sel{background:#B3261E}
-.nota.n3.sel{background:#A06A00}
-.nota.n4.sel{background:#4A8C00}
-.nota.n5.sel{background:#2F6B00}
+.nota.ruim.sel{background:#B3261E}
+.nota.medio.sel{background:#A06A00}
+.nota.bom.sel{background:#4A8C00}
+.nota.otimo.sel{background:#2F6B00}
 .avaliar textarea{border:1px solid var(--borda);border-radius:12px;padding:10px 14px;background:var(--card2);font-size:16px;resize:vertical;min-height:58px}
 
 /* ---------- Toast ---------- */
@@ -299,3 +300,14 @@ body.ocupado{cursor:progress}
 .comp-acoes .btn-prim{flex:1}
 @media (min-width:900px){ #conv-voltar{display:none} }
 .fila-info .btn{white-space:nowrap;flex:0 0 auto}
+
+/* Anexos */
+.btn-clipe{flex:0 0 auto;width:46px;height:46px;border-radius:50%;border:1px solid var(--borda);background:var(--card2);font-size:20px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.btn-clipe:hover{border-color:#1A8CFF}
+.anexo-img{display:block;padding:0;border:0;background:none;cursor:zoom-in;margin:0 0 6px;border-radius:10px;overflow:hidden;max-width:240px;min-height:60px;min-width:120px;background:rgba(0,0,0,.06)}
+.anexo-img img{display:block;max-width:240px;max-height:260px;width:auto;height:auto}
+.anexo-img.falhou::after{content:"Foto indisponível";display:block;padding:18px 12px;font-size:13px;color:var(--chk)}
+.anexo-arq{display:flex;align-items:center;gap:10px;max-width:260px;padding:8px 12px 8px 8px;margin:0 0 6px;border:1px solid rgba(0,0,0,.12);border-radius:10px;background:rgba(255,255,255,.55);cursor:pointer;text-align:left;font:inherit;color:inherit}
+.anexo-arq:hover{border-color:#1A8CFF}
+.anexo-ic{flex:0 0 auto;width:40px;height:40px;border-radius:8px;background:#003D7C;color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.anexo-nome{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}

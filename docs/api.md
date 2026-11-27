@@ -19,7 +19,7 @@ Chamadas via `POST /rest/v1/rpc/<nome>` com o token do login Microsoft. Todas ex
 | `ca_enviar_mensagem` | `p_chamado, p_conteudo, p_tipo='texto', p_anexo jsonb {path,nome,mime}, p_interna=false` | `{id, autor, criada_em}` |
 | `ca_marcar_lidas` | `p_chamado` | nº de mensagens marcadas |
 | `ca_desistir` | `p_chamado, p_motivo` | chamado |
-| `ca_avaliar` | `p_chamado, p_nota smallint, p_comentario` | chamado |
+| `ca_avaliar` | `p_chamado, p_nota smallint (1 a 10), p_comentario` | chamado |
 
 ## Atendente (console)
 
@@ -70,3 +70,11 @@ Ao receber o evento, recarregar pelo `ca_chamado`/`ca_painel_atendente` (o event
 
 Realtime **broadcast** (sem tabela) no canal `ca-chamado-<id>`, evento `digitando`, payload `{autor: "solicitante"|"atendente"}`.
 Mandar no máximo 1 a cada 3 s e não pôr texto da mensagem no payload.
+
+## Anexos
+
+Arquivos vão para o Storage, bucket privado `central-atendimento`, no caminho `<id do chamado>/<nome>`
+(até 20 MB; fotos, PDF, Word, Excel, CSV e texto). Quem vê o chamado pode ler; quem vê e o chamado está aberto pode enviar.
+Depois do upload, `ca_enviar_mensagem(p_chamado, p_conteudo, 'texto', p_anexo => {path, nome, mime})` grava a mensagem
+(o tipo vira `imagem` ou `arquivo`). Para abrir, o front pede um link assinado de 1 hora (`/storage/v1/object/sign/...`).
+Perguntas de fluxo com `campo: "arquivo"`: o app sobe o arquivo durante o fluxo e, ao enviar o pedido, manda cada arquivo como mensagem.

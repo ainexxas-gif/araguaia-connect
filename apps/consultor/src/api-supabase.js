@@ -7,7 +7,8 @@
   var URL_ = (CFG.supabaseUrl || "").replace(/\/$/, "");
   var KEY = CFG.supabaseKey || "";
   var SK = "ld_sessao_v2";
-  var sess = null, renovando = null;
+  var sess = null, renovando = null, linkCache = {};
+  var BUCKET = "central-atendimento";
 
   function lerSess() { try { return JSON.parse(localStorage.getItem(SK)); } catch (e) { return null; } }
   function gravarSess(s) { sess = s; try { if (s) localStorage.setItem(SK, JSON.stringify(s)); else localStorage.removeItem(SK); } catch (e) { /* ok */ } }
@@ -132,7 +133,37 @@
     enviarRespostas: function (id, respostas) { return rpc("ca_enviar_respostas", { p_chamado: id, p_respostas: respostas }); },
     meusChamados: function () { return rpc("ca_meus_chamados", { p_limite: 50 }); },
     chamado: function (id) { return rpc("ca_chamado", { p_chamado: id }); },
-    enviarMensagem: function (id, conteudo) { return rpc("ca_enviar_mensagem", { p_chamado: id, p_conteudo: conteudo }); },
+    enviarMensagem: function (id, conteudo, anexo) { return rpc("ca_enviar_mensagem", { p_chamado: id, p_conteudo: conteudo || null, p_anexo: anexo || null }); },
+    /* Anexos: arquivo vai para o Storage (bucket privado) na pasta do chamado; a mensagem guarda o caminho. */
+    enviarArquivo: async function (id, arquivo) {
+      var nome = String(arquivo.name || "arquivo").replace(/[^\w.\-]+/g, "_").slice(-80);
+      var path = id + "/" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + "-" + nome;
+      var tk = await token(), r;
+      try {
+        r = await fetch(URL_ + "/storage/v1/object/" + BUCKET + "/" + encodeURI(path), {
+          method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + tk, "Content-Type": arquivo.type || "application/octet-stream", "x-upsert": "false" }, body: arquivo
+        });
+      } catch (e) { throw erroAmigavel(0, {}); }
+      if (!r.ok) {
+        var j = await r.json().catch(function () { return {}; });
+        var e2 = new Error(r.status === 413 || /size/i.test(j.message || "") ? "Arquivo grande demais (máximo 20 MB)." :
+          /mime|type/i.test(j.message || "") ? "Tipo de arquivo não aceito. Envie foto, PDF, Word ou Excel." : "Não foi possível enviar o arquivo. Tente de novo.");
+        e2.codigo = String(r.status); throw e2;
+      }
+      return { path: path, nome: arquivo.name || nome, mime: arquivo.type || "" };
+    },
+    linkArquivo: async function (path) {
+      if (linkCache[path] && linkCache[path].ate > Date.now()) return linkCache[path].url;
+      var tk = await token();
+      var r = await fetch(URL_ + "/storage/v1/object/sign/" + BUCKET + "/" + encodeURI(path), {
+        method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + tk, "Content-Type": "application/json" }, body: JSON.stringify({ expiresIn: 3600 })
+      });
+      var j = await r.json().catch(function () { return {}; });
+      if (!r.ok || !j.signedURL) throw new Error("Não foi possível abrir o anexo.");
+      var url = URL_ + "/storage/v1" + j.signedURL;
+      linkCache[path] = { url: url, ate: Date.now() + 50 * 60000 };
+      return url;
+    },
     marcarLidas: function (id) { return rpc("ca_marcar_lidas", { p_chamado: id }); },
     desistir: function (id, motivo) { return rpc("ca_desistir", { p_chamado: id, p_motivo: motivo || null }); },
     avaliar: function (id, nota, comentario) { return rpc("ca_avaliar", { p_chamado: id, p_nota: nota, p_comentario: comentario || null }); },

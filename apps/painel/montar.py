@@ -90,8 +90,8 @@ def montar(previa):
     logo = ler(os.path.join(SRC, "logo_branco.svg")).replace("<svg ", '<svg class="logo" role="img" aria-label="Araguaia" ', 1)
     png = base64.b64encode(open(os.path.join(SRC, "favicon32.png"), "rb").read()).decode()
     favicon = '<link rel="icon" type="image/svg+xml" href="%s">\n<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,%s">' % (svg_data_uri(icone), png)
-    csp = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
-           "connect-src 'self' %s; base-uri 'none'; form-action 'none'; object-src 'none'" % SUPABASE_URL)
+    csp = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: %s; "
+           "connect-src 'self' %s; base-uri 'none'; form-action 'none'; object-src 'none'" % (SUPABASE_URL, SUPABASE_URL))
     html = ler(os.path.join(SITE, "index.html"))
     mock = '<script src="mock_seed.js?v=%s"></script>\n<script src="mock.js?v=%s"></script>' % (versao, versao) if previa else ""
     for k, v in (("__FAVICON__", favicon), ("__LOGO__", logo), ("__ICONE_SOLTO__", sem_fundo(icone).replace("<svg ", '<svg class="ic" aria-hidden="true" ', 1)),

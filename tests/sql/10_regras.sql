@@ -124,7 +124,7 @@ begin
   -- 11. Avaliação 1–5, uma vez, só o dono
   begin perform public.ca_avaliar(cid, 5::smallint); r := r || '11 FALHOU; '; exception when insufficient_privilege then r := r || '11 ok; '; end;
   perform pg_temp.como('fulano.teste@araguaia.com.br');
-  begin perform public.ca_avaliar(cid, 6::smallint); r := r || '11b FALHOU; '; exception when check_violation then r := r || '11b ok; '; end;
+  begin perform public.ca_avaliar(cid, 11::smallint); r := r || '11b FALHOU; '; exception when check_violation then r := r || '11b ok; '; end;
   j := public.ca_avaliar(cid, 4::smallint, 'rápido');
   r := r || '11c ' || case when (j->'avaliacao'->>'nota')::int = 4 then 'ok' else 'FALHOU' end || '; ';
   begin perform public.ca_avaliar(cid, 5::smallint); r := r || '11d FALHOU; '; exception when unique_violation then r := r || '11d ok; '; end;
