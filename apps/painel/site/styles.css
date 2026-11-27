@@ -292,8 +292,9 @@ table.tb{border-collapse:collapse;width:100%;font-size:14px}
 .msg.nota{align-self:stretch;max-width:none;background:var(--notaFundo);border:1px dashed var(--ambar)}
 .msg.nota .au{color:var(--ambarTx)}
 textarea.modoNota{background:var(--notaFundo);border-color:var(--ambar)}
-.chk{color:var(--tx3);font-size:12px;letter-spacing:-3px;margin-left:4px}
-.chk.lida{color:var(--azul2)}
+.chk{color:#9AA6B2;font-size:14px;font-weight:800;letter-spacing:-4px;margin-left:5px;padding-right:4px}
+.chk.lida{color:#1A8CFF}
+[data-theme=dark] .chk.lida{color:#53B4FF}
 .anexo{margin-top:4px;padding:4px 8px;border-radius:6px;background:var(--card2);font-size:13px;color:var(--tx2)}
 .escolhas.col{flex-direction:column;align-items:stretch}
 .escolhas.col button{display:flex;align-items:center;gap:6px;text-align:left;white-space:normal;padding:6px 12px}
