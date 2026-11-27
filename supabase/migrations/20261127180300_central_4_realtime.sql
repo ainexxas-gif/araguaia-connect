@@ -1,5 +1,5 @@
 -- =====================================================================
--- Central de Atendimento Interno · 4/5 · Realtime
+-- Central de Atendimento Interno · 4/6 · Realtime
 -- Data: 27/11/2026 · Pedido: Fabrizzio
 -- O app e o console escutam INSERT/UPDATE em mensagens e chamados pelo Realtime
 -- (postgres_changes). O Realtime respeita RLS, então liberamos SELECT só nessas

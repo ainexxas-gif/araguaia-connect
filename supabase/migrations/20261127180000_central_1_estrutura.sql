@@ -1,5 +1,5 @@
 -- =====================================================================
--- Central de Atendimento Interno · 1/4 · Estrutura
+-- Central de Atendimento Interno · 1/6 · Estrutura
 -- Data: 27/11/2026 · Pedido: Fabrizzio (Gerência Geral de Logística e Inovação)
 -- Porquê: substituir o fluxo do BLiP por uma central própria (app do consultor
 -- + console do atendente), com espera e atendimento separados, resultado,
@@ -10,7 +10,7 @@
 create schema if not exists central_atendimento;
 comment on schema central_atendimento is 'Central de Atendimento Interno dos consultores (substitui o BLiP).';
 
-set search_path = central_atendimento;
+set local search_path = central_atendimento, public;
 
 -- ---------------------------------------------------------------------
 -- Tipos

@@ -1,5 +1,5 @@
 -- =====================================================================
--- Central de Atendimento Interno · 3/5 · Funções públicas (API do app e do painel)
+-- Central de Atendimento Interno · 3/6 · Funções públicas (API do app e do painel)
 -- Data: 27/11/2026 · Pedido: Fabrizzio
 -- Todas em public.ca_*, security definer, search_path fixo, só para authenticated.
 -- Contrato documentado em docs/api.md.

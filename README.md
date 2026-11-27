@@ -1,4 +1,4 @@
-# Fila Zero · Central de Atendimento Interno
+# Araguaia Connect · Central de Atendimento Interno
 
 > Nome provisório. Substitui o fluxo do BLiP: o consultor (CTC, gerente, faturista) abre o app no celular,
 > escolhe a área e o assunto, responde as perguntas do fluxo e o pedido cai, já classificado, com o

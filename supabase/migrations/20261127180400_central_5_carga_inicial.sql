@@ -1,5 +1,5 @@
 -- =====================================================================
--- Central de Atendimento Interno · 5/5 · Carga inicial (dados de referência)
+-- Central de Atendimento Interno · 5/6 · Carga inicial (dados de referência)
 -- Data: 27/11/2026 · Pedido: Fabrizzio
 -- Fonte: doc "Central_Atendimento_Interno_Valor_e_Evolucao" (áreas, assuntos, campos coletados)
 --        e public.sales_team_mappings (equipes de venda vigentes, copiadas por SQL).
@@ -7,7 +7,7 @@
 -- cujos nomes não estão no documento. Ajustar pelo painel antes de entrar em produção.
 -- Idempotente: pode rodar de novo sem duplicar.
 -- =====================================================================
-set search_path = central_atendimento;
+set local search_path = central_atendimento, public;
 
 -- Áreas
 insert into areas(codigo, nome, descricao, icone, cor, ordem) values

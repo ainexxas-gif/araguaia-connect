@@ -1,5 +1,5 @@
 -- =====================================================================
--- Central de Atendimento Interno · 2/5 · Funções internas (identidade, regras, motor do fluxo)
+-- Central de Atendimento Interno · 2/6 · Funções internas (identidade, regras, motor do fluxo)
 -- Data: 27/11/2026 · Pedido: Fabrizzio
 -- Nenhuma destas funções é exposta ao front; ficam só no schema central_atendimento.
 -- =====================================================================
