@@ -128,7 +128,7 @@ begin
   r := validar_respostas(fl.definicao, p_respostas);
   fora := not em_expediente(c.fila_id);
   select * into f from filas where id = c.fila_id;
-  update chamados set respostas = r->'respostas', resumo = r->>'resumo', status = 'na_fila',
+  update chamados set respostas = r->'respostas', resumo = r->>'resumo', resumo_itens = coalesce(r->'itens', '[]'), status = 'na_fila',
          entrou_fila_em = now(), fora_horario = fora
   where id = c.id;
   perform evento(c.id, 'entrou_fila', null, null, c.fila_id);

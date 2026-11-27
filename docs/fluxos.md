@@ -25,7 +25,7 @@ com a mesma definição (`validar_respostas`). O construtor do painel grava `lay
 
 - **Tipos de passo**: `pergunta`, `mensagem`, `fim`.
 - **Campos**: `texto`, `numero` (`min`, `max`), `data` (AAAA-MM-DD), `opcoes`, `multipla` (array), `sim_nao`, `documento` (nº de RC/OV/pedido), `arquivo` (caminho no Storage).
-- **Opcionais**: `obrigatorio`, `regex` + `msg_erro`, `ajuda`, `max_caracteres` (padrão 2000), `rotulo_resumo`.
+- **Opcionais**: `validador` (`cpf` com dígito verificador, normaliza para 11 dígitos; `placa` Mercosul ou antiga, normaliza em maiúsculas), `min_hoje` (campo data: não aceita data passada), `obrigatorio`, `regex` + `msg_erro`, `ajuda`, `max_caracteres` (padrão 2000), `rotulo_resumo`.
 - **Caminho**: a partir de `inicio` (ou do 1º passo), segue a primeira aresta cuja condição `se` é atendida
   (arestas com condição têm preferência; a sem condição é o "senão"). Sem arestas saindo de um passo, segue a ordem da lista.
 - **Condições**: `{"chave": k, "igual": v}`, `{"diferente": v}`, `{"em": [..]}`, `{"preenchido": true}`.

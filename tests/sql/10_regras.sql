@@ -13,12 +13,14 @@ begin perform set_config('role', 'postgres', true); perform set_config('request.
 
 do $$
 declare r text := ''; j jsonb; cid uuid; cid2 uuid; ok boolean; n int; ass_ov smallint; ass_rc smallint; fila_ov smallint; fila_mod smallint;
-  at1 uuid; at2 uuid; adm uuid; e text;
+  at1 uuid; at2 uuid; adm uuid; e text; ass_mot smallint; ass_dr smallint;
   procedure_ok text;
 begin
   perform pg_temp.root();
   select id, fila_id into ass_ov, fila_ov from central_atendimento.assuntos where codigo = 'OV';
   select id into ass_rc from central_atendimento.assuntos where codigo = 'RC';
+  select id into ass_mot from central_atendimento.assuntos where codigo = 'CAD_MOTORISTA';
+  select id into ass_dr from central_atendimento.assuntos where codigo = 'DATA_REMESSA';
   select id into fila_mod from central_atendimento.filas where codigo = 'OC_MODIFICACAO';
   insert into central_atendimento.atendentes(email, nome, area_id, papel, presenca) values
     ('ana.atendente@araguaia.com.br', 'Ana Atendente', (select id from central_atendimento.areas where codigo='PI'), 'atendente', 'offline') returning id into at1;
@@ -170,6 +172,36 @@ begin
   r := r || '14 ' || case when n = 1 then 'ok' else 'FALHOU '||n end || '; ';
   select count(*) into n from central_atendimento.auditoria where tabela = 'areas' and por_email = 'admin.central@araguaia.com.br';
   r := r || '15 ' || case when n >= 2 then 'ok' else 'FALHOU '||n end || '; ';
+
+  -- 16. Validadores (CPF, placa, data mínima), posição na fila e resumo em itens
+  perform pg_temp.como('fulano.teste@araguaia.com.br');
+  j := public.ca_iniciar(ass_mot); cid2 := (j->'chamado'->>'id')::uuid;
+  begin perform public.ca_enviar_respostas(cid2, '{"numero_pedido":"1234567","motorista_nome":"João","motorista_cpf":"12345678900","motorista_cnh":"123456789","motorista_telefone":"64999990000","placa_cavalo":"ABC1D23","transportadora":"X"}');
+    r := r || '16 FALHOU; '; exception when check_violation then r := r || '16 ok; '; end;
+  begin perform public.ca_enviar_respostas(cid2, '{"numero_pedido":"1234567","motorista_nome":"João","motorista_cpf":"529.982.247-25","motorista_cnh":"123456789","motorista_telefone":"64999990000","placa_cavalo":"AB-1D23","transportadora":"X"}');
+    r := r || '16b FALHOU; '; exception when check_violation then r := r || '16b ok; '; end;
+  j := public.ca_enviar_respostas(cid2, '{"numero_pedido":"1234567","motorista_nome":"João","motorista_cpf":"529.982.247-25","motorista_cnh":"123456789","motorista_telefone":"64999990000","placa_cavalo":"abc-1d23","transportadora":"X"}');
+  r := r || '16c ' || case when j->'respostas'->>'motorista_cpf' = '52998224725' and j->'respostas'->>'placa_cavalo' = 'ABC1D23'
+       and jsonb_array_length(j->'resumo_itens') = 7 and (j->>'posicao_fila')::int = 1 then 'ok' else 'FALHOU '||j::text end || '; ';
+  j := public.ca_iniciar(ass_mot);
+  j := public.ca_enviar_respostas((j->'chamado'->>'id')::uuid, '{"numero_pedido":"7654321","motorista_nome":"Zé","motorista_cpf":"52998224725","motorista_cnh":"123456789","motorista_telefone":"64999990000","placa_cavalo":"ABC1234","transportadora":"Y"}');
+  r := r || '16d ' || case when (j->>'posicao_fila')::int = 2 then 'ok' else 'FALHOU '||coalesce(j->>'posicao_fila','null')||' '||(j->>'status') end || '; ';
+  j := public.ca_iniciar(ass_dr);
+  begin perform public.ca_enviar_respostas((j->'chamado'->>'id')::uuid, '{"numero_pedido":"1234567","nova_data":"2020-01-01","motivo":"Outro"}');
+    r := r || '16e FALHOU; '; exception when check_violation then r := r || '16e ok; '; end;
+
+  -- 17. Funções do console (migração 6)
+  perform pg_temp.como('beto.oc@araguaia.com.br');
+  j := public.ca_console_contexto();
+  r := r || '17 ' || case when jsonb_array_length(j->'filas') >= 9 and jsonb_array_length(j->'atendentes') = 3 then 'ok' else 'FALHOU' end || '; ';
+  begin perform public.ca_console_lista('equipe'); r := r || '17b FALHOU; '; exception when insufficient_privilege then r := r || '17b ok; '; end;
+  j := public.ca_console_lista('encerrados_hoje');
+  r := r || '17c ' || case when jsonb_array_length(j) = 1 then 'ok' else 'FALHOU '||jsonb_array_length(j) end || '; ';
+  perform pg_temp.como('admin.central@araguaia.com.br');
+  j := public.ca_admin_chamados(current_date - 1, current_date + 1);
+  r := r || '17d ' || case when (select bool_or((x->>'resolvido_1o_contato')::boolean) from jsonb_array_elements(j) x) and j->0 ? 'area_id' then 'ok' else 'FALHOU' end || '; ';
+  perform pg_temp.como('fulano.teste@araguaia.com.br');
+  begin perform public.ca_console_contexto(); r := r || '17e FALHOU; '; exception when insufficient_privilege then r := r || '17e ok; '; end;
 
   raise exception 'RESULTADO: %', r;
 end $$;

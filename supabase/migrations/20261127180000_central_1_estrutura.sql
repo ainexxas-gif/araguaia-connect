@@ -211,6 +211,7 @@ create table if not exists chamados (
   atendente_id  uuid references atendentes(id),
   respostas     jsonb not null default '{}'::jsonb,    -- {chave: valor} do fluxo
   resumo        text,                                  -- texto pronto para o atendente
+  resumo_itens  jsonb not null default '[]'::jsonb,    -- [{rotulo, valor}] para desenhar o cartão
   prioridade    smallint not null default 0,
   fora_horario  boolean not null default false,
   -- marcos de tempo (horário do servidor)

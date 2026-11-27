@@ -135,6 +135,9 @@ begin
         raise exception 'Pergunta % precisa de opções.', n->>'id' using errcode='23514';
       end if;
       if n ? 'regex' then perform '' ~ (n->>'regex'); end if;  -- regex inválida falha aqui
+      if n ? 'validador' and n->>'validador' not in ('cpf','placa') then
+        raise exception 'Validador desconhecido na pergunta %: %', n->>'id', n->>'validador' using errcode='23514';
+      end if;
     end if;
   end loop;
   if coalesce(p_def->>'inicio', '') <> '' and not (p_def->>'inicio' = any(ids)) then
@@ -145,6 +148,18 @@ begin
       raise exception 'Ligação inválida no fluxo: % → %', a->>'de', a->>'para' using errcode='23514';
     end if;
   end loop;
+end $$;
+
+create or replace function central_atendimento.cpf_valido(p text) returns boolean
+language plpgsql immutable set search_path = central_atendimento as $$
+declare d text := regexp_replace(coalesce(p, ''), '\D', '', 'g'); s int; i int; dv1 int; dv2 int;
+begin
+  if length(d) <> 11 or d ~ '^(\d)\1{10}$' then return false; end if;
+  s := 0; for i in 1..9 loop s := s + substr(d, i, 1)::int * (11 - i); end loop;
+  dv1 := case when s % 11 < 2 then 0 else 11 - s % 11 end;
+  s := 0; for i in 1..10 loop s := s + substr(d, i, 1)::int * (12 - i); end loop;
+  dv2 := case when s % 11 < 2 then 0 else 11 - s % 11 end;
+  return dv1 = substr(d, 10, 1)::int and dv2 = substr(d, 11, 1)::int;
 end $$;
 
 create or replace function central_atendimento.cond_ok(p_se jsonb, p_resp jsonb) returns boolean
@@ -166,7 +181,7 @@ create or replace function central_atendimento.validar_respostas(p_def jsonb, p_
 language plpgsql immutable set search_path = central_atendimento as $$
 declare
   atual text := coalesce(p_def->>'inicio', p_def->'nos'->0->>'id');
-  n jsonb; v jsonb; txt text; saida jsonb := '{}'; resumo text := ''; passos int := 0; prox text;
+  n jsonb; v jsonb; txt text; saida jsonb := '{}'; resumo text := ''; itens jsonb := '[]'; passos int := 0; prox text;
   campo text; nome text; num numeric;
 begin
   p_resp := coalesce(p_resp, '{}');
@@ -193,7 +208,10 @@ begin
         elsif campo = 'data' then
           begin perform txt::date;
           exception when others then raise exception '% precisa ser uma data válida.', nome using errcode='23514'; end;
-          v := to_jsonb(txt::date::text);
+          if coalesce((n->>'min_hoje')::boolean, false) and txt::date < (now() at time zone 'America/Sao_Paulo')::date then
+            raise exception '% não pode ser uma data passada.', nome using errcode='23514';
+          end if;
+          v := to_jsonb(txt::date::text); txt := to_char(txt::date, 'DD/MM/YYYY');
         elsif campo = 'opcoes' then
           if not exists (select 1 from jsonb_array_elements_text(n->'opcoes') o where o = txt) then
             raise exception 'Escolha uma opção válida em: %', nome using errcode='23514';
@@ -217,7 +235,15 @@ begin
         if n ? 'regex' and campo in ('texto','documento','numero') and txt !~ (n->>'regex') then
           raise exception '%', coalesce(n->>'msg_erro', 'Formato inválido em: ' || nome) using errcode='23514';
         end if;
+        if n->>'validador' = 'cpf' and not cpf_valido(txt) then
+          raise exception '%', coalesce(n->>'msg_erro', 'CPF inválido em: ' || nome) using errcode='23514';
+        elsif n->>'validador' = 'placa' and upper(regexp_replace(txt, '[^A-Za-z0-9]', '', 'g')) !~ '^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$' then
+          raise exception '%', coalesce(n->>'msg_erro', 'Placa inválida em: ' || nome) using errcode='23514';
+        end if;
+        if n->>'validador' = 'placa' then txt := upper(regexp_replace(txt, '[^A-Za-z0-9]', '', 'g')); v := to_jsonb(txt); end if;
+        if n->>'validador' = 'cpf' then txt := regexp_replace(txt, '\D', '', 'g'); v := to_jsonb(txt); end if;
         saida := saida || jsonb_build_object(n->>'chave', v);
+        itens := itens || jsonb_build_array(jsonb_build_object('chave', n->>'chave', 'rotulo', coalesce(n->>'rotulo_resumo', nome), 'valor', txt));
         resumo := resumo || coalesce(n->>'rotulo_resumo', nome) || ': ' || txt || E'\n';
       end if;
     end if;
@@ -236,7 +262,7 @@ begin
     end if;
     atual := prox;
   end loop;
-  return jsonb_build_object('respostas', saida, 'resumo', rtrim(resumo, E'\n'));
+  return jsonb_build_object('respostas', saida, 'resumo', rtrim(resumo, E'\n'), 'itens', itens);
 end $$;
 
 -- ---------------------------------------------------------------------
@@ -252,7 +278,7 @@ begin
     cid := null; at := null;
     select ch.id into cid from chamados ch
     where ch.fila_id = p_fila and ch.status = 'na_fila' and ch.atendente_id is null
-    order by ch.prioridade desc, ch.entrou_fila_em
+    order by ch.prioridade desc, ch.entrou_fila_em, ch.protocolo
     for update skip locked limit 1;
     exit when cid is null;
     select a.id into at
@@ -284,7 +310,14 @@ language sql stable security definer set search_path = central_atendimento as $$
     'solicitante', jsonb_build_object('id', so.id, 'nome', so.nome, 'matricula', so.matricula,
                                       'equipe', (select e.codigo || coalesce(' · ' || e.descricao, '') from equipes_venda e where e.id = c.equipe_venda_id)),
     'atendente', (select jsonb_build_object('id', a.id, 'nome', a.nome) from atendentes a where a.id = c.atendente_id),
-    'respostas', c.respostas, 'resumo', c.resumo, 'prioridade', c.prioridade, 'fora_horario', c.fora_horario,
+    'respostas', c.respostas, 'resumo', c.resumo, 'resumo_itens', c.resumo_itens,
+    'posicao_fila', case when c.status = 'na_fila' then 1 + (select count(*) from chamados o
+        where o.fila_id = c.fila_id and o.status = 'na_fila' and o.id <> c.id
+          and (o.prioridade > c.prioridade or (o.prioridade = c.prioridade and (o.entrou_fila_em, o.protocolo) < (c.entrou_fila_em, c.protocolo)))) end,
+    'espera_estimada_min', case when c.status = 'na_fila' then (select ceil(avg(r.espera_seg) / 60.0)::int from (
+        select o.espera_seg from chamados o where o.fila_id = c.fila_id and o.espera_seg is not null
+          and o.assumido_em > now() - interval '7 days' and not o.fora_horario
+        order by o.assumido_em desc limit 20) r) end, 'prioridade', c.prioridade, 'fora_horario', c.fora_horario,
     'criado_em', c.criado_em, 'entrou_fila_em', c.entrou_fila_em, 'assumido_em', c.assumido_em,
     'primeira_resposta_em', c.primeira_resposta_em, 'encerrado_em', c.encerrado_em,
     'espera_seg', c.espera_seg, 'atendimento_seg', c.atendimento_seg,

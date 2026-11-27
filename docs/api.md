@@ -35,6 +35,8 @@ Chamadas via `POST /rest/v1/rpc/<nome>` com o token do login Microsoft. Todas ex
 | `ca_encerrar` | `p_chamado, p_resultado, p_documento_tipo, p_documento_numero, p_obs` | resultado: resolvido, resolvido_parcial, nao_resolvido, encaminhado_outra_area, sem_retorno_solicitante, duplicado, fora_do_escopo |
 | `ca_prioridade` | `p_chamado, p_prioridade 0–9, p_motivo` | só supervisor/admin |
 | `ca_respostas_rapidas` | — | atalhos |
+| `ca_console_contexto` | — | áreas, filas, assuntos, atendentes (filas e carga) e respostas rápidas, leitura para qualquer atendente |
+| `ca_console_lista` | `p_visao` 'equipe' (supervisor/admin) ou 'encerrados_hoje' | |
 
 ## Administração e indicadores
 
@@ -46,8 +48,13 @@ Chamadas via `POST /rest/v1/rpc/<nome>` com o token do login Microsoft. Todas ex
 | `ca_admin_fluxos` | `p_assunto` | versões |
 | `ca_admin_fluxo_salvar` | `p_assunto, p_definicao` | valida e grava como rascunho |
 | `ca_admin_fluxo_publicar` | `p_fluxo int` | arquiva a publicada anterior |
-| `ca_admin_chamados` | `p_de date, p_ate date, p_area, p_limite ≤1000, p_offset` | base para exportar (supervisor vê a própria área) |
+| `ca_admin_chamados` | `p_de date, p_ate date, p_area, p_limite ≤1000, p_offset` | base para exportar, com ids e `resolvido_1o_contato` por linha; sem chamados em `bot` (supervisor vê a própria área) |
 | `ca_indicadores` | `p_de, p_ate, p_area` | resumo, por área, assunto, atendente, hora e resultado |
+
+## Campos extras do chamado
+
+- `resumo_itens`: `[{chave, rotulo, valor}]` das respostas, para desenhar o cartão sem ler texto.
+- `posicao_fila` (1 = próximo) e `espera_estimada_min` (média das últimas 20 esperas da fila em 7 dias, sem as de fora do horário): só quando `na_fila`.
 
 ## Tempo real
 
@@ -58,3 +65,8 @@ Assinar `postgres_changes` no schema `central_atendimento`:
 
 O Realtime respeita RLS: cada um só recebe o que pode ver; notas internas só chegam a atendentes.
 Ao receber o evento, recarregar pelo `ca_chamado`/`ca_painel_atendente` (o evento traz a linha crua).
+
+## "Digitando…"
+
+Realtime **broadcast** (sem tabela) no canal `ca-chamado-<id>`, evento `digitando`, payload `{autor: "solicitante"|"atendente"}`.
+Mandar no máximo 1 a cada 3 s e não pôr texto da mensagem no payload.
