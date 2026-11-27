@@ -8,3 +8,6 @@ carga/
 *.csv
 shots/
 .DS_Store
+apps/painel/public/
+apps/painel/previa/
+__pycache__/

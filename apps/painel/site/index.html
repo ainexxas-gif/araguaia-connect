@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="__CSP__">
+<meta name="referrer" content="no-referrer">
+<title>__NOME__</title>
+__FAVICON__
+<link rel="stylesheet" href="styles.css?v=__VERSAO__">
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="telaLogin" class="login" hidden>
+  <div class="box">
+    <div class="hero">
+      <span class="marca">__LOGO__</span>
+      <div class="lt">
+        <span class="ic-login">__ICONE_SOLTO__</span>
+        <div><div class="eyebrow">Araguaia · Logística e Inovação</div><h1 class="nomeProduto">__NOME__</h1></div>
+      </div>
+      <p>Painel de quem atende o time comercial: fila, conversa, encerramento e indicadores num lugar só.</p>
+      <div class="fatos"><span>Fila em tempo real</span><span>Fluxos sem programador</span><span>Indicadores exportáveis</span></div>
+    </div>
+    <div class="loginCorpo">
+      <button class="bt pri" id="btMs" type="button"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect width="8" height="8" fill="#F25022"/><rect x="10" width="8" height="8" fill="#7FBA00"/><rect y="10" width="8" height="8" fill="#00A4EF"/><rect x="10" y="10" width="8" height="8" fill="#FFB900"/></svg> Entrar com a conta Araguaia</button>
+      <p class="ajuda">Use o mesmo e-mail e senha do Outlook e do Teams.</p>
+      <p class="msgErro" id="lgErro" hidden></p>
+      <div id="lgPrevia" hidden></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APLICAÇÃO ============ -->
+<div id="app" hidden>
+<header id="hdr">
+  <div class="marca">
+    __LOGO__
+    <span class="traco"></span>
+    <span class="ic">__ICONE_SOLTO__</span>
+    <div class="txt">
+      <div class="eyebrow">Araguaia · Atendimento interno</div>
+      <h1 class="nomeProduto">__NOME__</h1>
+      <div class="ctx" id="ctxUser"></div>
+    </div>
+  </div>
+  <nav id="abas">
+    <button class="pilula" data-aba="console">Atendimento <span class="n" id="nFila" hidden></span></button>
+    <button class="pilula" data-aba="indicadores" data-papel="supervisor">Indicadores</button>
+    <button class="pilula" data-aba="fluxos" data-papel="admin">Fluxos</button>
+    <button class="pilula" data-aba="cadastros" data-papel="admin">Cadastros</button>
+    <span class="statusSel" id="statusSel" title="Seu status de atendimento"><span class="dot offline" id="stDot"></span>
+      <select id="stSel" aria-label="Meu status"><option value="online">Disponível</option><option value="pausa">Em pausa</option><option value="offline">Offline</option></select></span>
+    <button class="pilula" id="btTema" title="Alternar tema claro/escuro">Tema escuro</button>
+    <button class="pilula" id="btSair">Sair</button>
+  </nav>
+</header>
+
+<main>
+  <div class="pane" id="pane-console"></div>
+  <div class="pane" id="pane-indicadores" hidden></div>
+  <div class="pane" id="pane-fluxos" hidden></div>
+  <div class="pane" id="pane-cadastros" hidden></div>
+</main>
+<div class="rodape">Gerência Geral de Logística e Inovação · Araguaia · <span id="versao">v__VERSAO__</span></div>
+</div>
+
+<div id="toast" aria-live="polite"></div>
+<div id="modalRaiz"></div>
+
+<script src="config.js?v=__VERSAO__"></script>
+<script src="app.js?v=__VERSAO__"></script>
+<script src="fluxo_motor.js?v=__VERSAO__"></script>
+__MOCK__
+<script src="motor.js?v=__VERSAO__"></script>
+<script src="console.js?v=__VERSAO__"></script>
+<script src="cadastros.js?v=__VERSAO__"></script>
+<script src="fluxos.js?v=__VERSAO__"></script>
+<script src="indicadores.js?v=__VERSAO__"></script>
+<script src="iniciar.js?v=__VERSAO__"></script>
+</body>
+</html>
