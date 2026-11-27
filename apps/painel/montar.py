@@ -18,8 +18,8 @@ MIGR = os.environ.get("MIGRACOES", os.path.normpath(os.path.join(RAIZ, "..", "..
 AMB = os.path.normpath(os.path.join(RAIZ, "..", "..", "ambientes.json"))
 
 NOME = "Araguaia Connect"            # nome provisório: único ponto de configuração
-SUPABASE_URL = os.environ.get("SUPABASE_URL") or "https://cnbicexublaxoctsxjgq.supabase.co"
-CHAVE_PUBLICAVEL = os.environ.get("SUPABASE_KEY") or "sb_publishable_goK2pfeTHlSnJWFsVF4-Bg_lCOYvhuT"   # publicável: pode ficar no front
+SUPABASE_URL = os.environ.get("SUPABASE_URL") or "https://hajteevwnliqykvlsucb.supabase.co"
+CHAVE_PUBLICAVEL = os.environ.get("SUPABASE_KEY") or "sb_publishable_IWLDS9ucg41QuX0X6z8BJg_sIBYMwDb"   # publicável: pode ficar no front
 PERMITIDOS = [SUPABASE_URL, "http://www.w3.org/2000/svg", "http://www.w3.org/1999/xlink"]
 JS = ["config.js", "app.js", "fluxo_motor.js", "motor.js", "console.js", "cadastros.js", "fluxos.js", "indicadores.js", "iniciar.js"]
 
