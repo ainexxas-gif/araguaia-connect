@@ -48,4 +48,4 @@ Os cadastros e fluxos da prévia saem da migração de carga inicial; atendentes
 - `site/motor.js` definição única dos indicadores (mesmas regras de `ca_indicadores`)
 - `site/fluxo_motor.js` cópia em JS de `validar_definicao` / `validar_respostas`, usada no simulador; o servidor confere antes de publicar
 - `site/mock.js` só na prévia
-- `src/` ícone (opção C), logo branco da Araguaia, favicon; `src/icones/` as 4 opções de ícone
+- `src/` ícone B (Conversa), o mesmo do app do consultor, logo branco da Araguaia, favicon; `src/icones/` as 4 opções de ícone

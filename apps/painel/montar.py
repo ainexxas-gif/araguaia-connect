@@ -40,7 +40,7 @@ def svg_data_uri(svg):
 
 def sem_fundo(svg):
     """Ícone dentro da página: sem o quadrado de fundo (A4.2)."""
-    return re.sub(r'<rect width="64" height="64"[^>]*/>', "", svg, count=1).replace('viewBox="0 0 64 64"', 'viewBox="6 8 52 50"')
+    return re.sub(r'<rect width="64" height="64"[^>]*/>', "", svg, count=1).replace('viewBox="0 0 64 64"', 'viewBox="8 8 48 46"')
 
 
 def seed_das_migracoes():
