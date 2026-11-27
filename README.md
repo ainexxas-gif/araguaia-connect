@@ -44,10 +44,13 @@ docs/                  modelo de dados, API (funções ca_*) e formato dos fluxo
 
 ## Situação
 
-- 27/11/2026: migrações 1 a 6 aplicadas no projeto Araguaia MC (no Supabase a 3 entrou em duas partes,
-  `central_3_rpc` e `central_3b_admin_remover`, e há uma 7 de ajuste de search_path). Banco vazio de chamados,
-  consultores e atendentes; áreas, filas, assuntos, horários, fluxos e 155 equipes de venda carregados.
-- Próximo passo: cadastrar os atendentes (e-mail, área, papel, filas) pelo painel ou por `ca_admin_salvar`.
+- 27/11/2026: migrações 1 a 7 aplicadas na branch **log-inov** do Araguaia MC (`hajteevwnliqykvlsucb`).
+  No Supabase a 3 entrou em duas partes (`central_3_rpc` e `central_3b_admin_remover`). Banco sem chamados;
+  áreas, filas, assuntos, horários, fluxos e 155 equipes de venda carregados; admin inicial cadastrado.
+- A branch não tem `public.employees` nem `public.sales_team_mappings`: `ca_identificar` só aceita matrícula
+  pré-cadastrada em `solicitantes`, e as equipes foram copiadas da produção.
+- A produção do Araguaia MC não deve ter nada da Central (limpeza em `remover_da_producao_araguaia_mc.sql`, na pasta do projeto).
+- Próximo passo: cadastrar atendentes e consultores pelo painel ou por `ca_admin_salvar`.
 
 ## Testar
 

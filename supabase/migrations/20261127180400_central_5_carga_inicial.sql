@@ -17,12 +17,16 @@ insert into areas(codigo, nome, descricao, icone, cor, ordem) values
 on conflict (codigo) do update set nome = excluded.nome, descricao = excluded.descricao;
 
 -- Equipes de venda vigentes (cópia de public.sales_team_mappings)
-insert into equipes_venda(codigo, descricao, uf, canal, regiao, ativa)
-select distinct on (m.equipe_vendas) m.equipe_vendas, m.descr_equipe, m.uf, m.canal_vendas, m.regiao_equipe, true
-from public.sales_team_mappings m
-where m.vigente and coalesce(m.equipe_vendas, '') <> ''
-order by m.equipe_vendas, m.id desc
-on conflict (codigo) do update set descricao = excluded.descricao, uf = excluded.uf, canal = excluded.canal, regiao = excluded.regiao;
+do $$ begin
+  if to_regclass('public.sales_team_mappings') is not null then
+    execute $q$insert into central_atendimento.equipes_venda(codigo, descricao, uf, canal, regiao, ativa)
+      select distinct on (m.equipe_vendas) m.equipe_vendas, m.descr_equipe, m.uf, m.canal_vendas, m.regiao_equipe, true
+      from public.sales_team_mappings m
+      where m.vigente and coalesce(m.equipe_vendas, '') <> ''
+      order by m.equipe_vendas, m.id desc
+      on conflict (codigo) do update set descricao = excluded.descricao, uf = excluded.uf, canal = excluded.canal, regiao = excluded.regiao$q$;
+  end if;
+end $$;
 
 -- Filas: uma por assunto [A VALIDAR com as 21 filas do BLiP]
 insert into filas(area_id, codigo, nome, sla_espera_min, sla_atendimento_min)

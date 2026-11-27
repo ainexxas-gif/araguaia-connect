@@ -1,8 +1,9 @@
 {
-  "producao": {
-    "supabase_projeto": "cnbicexublaxoctsxjgq",
-    "supabase_url": "https://cnbicexublaxoctsxjgq.supabase.co",
+  "log-inov": {
+    "observacao": "branch persistente do projeto Araguaia MC, onde a Central roda",
+    "supabase_projeto": "hajteevwnliqykvlsucb",
+    "supabase_url": "https://hajteevwnliqykvlsucb.supabase.co",
     "schema": "central_atendimento",
-    "branch": "main"
+    "branch": "log-inov"
   }
 }

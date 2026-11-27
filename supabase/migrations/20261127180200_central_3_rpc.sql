@@ -55,8 +55,10 @@ begin
     end if;
     update solicitantes set email = em, identificado_em = coalesce(identificado_em, now()) where id = s.id;
   else
-    select e.employee_id, e.first_name, e.last_name, lower(e.email) as email into emp
-    from public.employees e where e.employee_id = m;
+    if to_regclass('public.employees') is not null then
+      execute 'select e.employee_id, e.first_name, e.last_name, lower(e.email) as email from public.employees e where e.employee_id = $1'
+        into emp using m;
+    end if;
     if emp.employee_id is null then
       raise exception 'Matrícula % não encontrada. Confira o número ou fale com a administração da Central.', m using errcode = '23503';
     end if;
