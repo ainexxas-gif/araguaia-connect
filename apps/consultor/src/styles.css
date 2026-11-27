@@ -299,3 +299,14 @@ body.ocupado{cursor:progress}
 .comp-acoes .btn-prim{flex:1}
 @media (min-width:900px){ #conv-voltar{display:none} }
 .fila-info .btn{white-space:nowrap;flex:0 0 auto}
+
+/* Anexos */
+.btn-clipe{flex:0 0 auto;width:46px;height:46px;border-radius:50%;border:1px solid var(--borda);background:var(--card2);font-size:20px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.btn-clipe:hover{border-color:#1A8CFF}
+.anexo-img{display:block;padding:0;border:0;background:none;cursor:zoom-in;margin:0 0 6px;border-radius:10px;overflow:hidden;max-width:240px;min-height:60px;min-width:120px;background:rgba(0,0,0,.06)}
+.anexo-img img{display:block;max-width:240px;max-height:260px;width:auto;height:auto}
+.anexo-img.falhou::after{content:"Foto indisponível";display:block;padding:18px 12px;font-size:13px;color:var(--chk)}
+.anexo-arq{display:flex;align-items:center;gap:10px;max-width:260px;padding:8px 12px 8px 8px;margin:0 0 6px;border:1px solid rgba(0,0,0,.12);border-radius:10px;background:rgba(255,255,255,.55);cursor:pointer;text-align:left;font:inherit;color:inherit}
+.anexo-arq:hover{border-color:#1A8CFF}
+.anexo-ic{flex:0 0 auto;width:40px;height:40px;border-radius:8px;background:#003D7C;color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.anexo-nome{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}

@@ -21,6 +21,7 @@
     desassinar: null, ultDigitar: 0 };
 
   function $(id) { return document.getElementById(id); }
+  var ACEITA = "image/*,application/pdf,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt";
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* ok */ } }
@@ -223,7 +224,7 @@
     return r;
   }
   function chaveRasc(cid) { return "ld_rasc_v2::" + (eu() ? eu().matricula : "") + "::" + cid; }
-  function salvarRasc() { if (S.bot) lsSet(chaveRasc(S.bot.chamado.id), JSON.stringify({ respostas: S.bot.respostas, hist: S.bot.hist, vistas: S.bot.vistas })); }
+  function salvarRasc() { if (S.bot) lsSet(chaveRasc(S.bot.chamado.id), JSON.stringify({ respostas: S.bot.respostas, hist: S.bot.hist, vistas: S.bot.vistas, anexos: S.bot.anexos })); }
   async function abrirFluxo(assuntoId) {
     var r = acharAssunto(assuntoId);
     if (!r) { toast("Assunto não encontrado.", "erro"); ir("#/novo"); return; }
@@ -233,8 +234,8 @@
     try { ini = await api.iniciar(assuntoId); } catch (e) { falha(e); ir("#/novo"); return; }
     if (S.rota !== "pedido") return;
     var rasc = null; try { rasc = JSON.parse(lsGet(chaveRasc(ini.chamado.id))); } catch (e) { rasc = null; }
-    S.bot = { area: r.area, assunto: r.assunto, chamado: ini.chamado, def: ini.fluxo.definicao, respostas: {}, hist: [], vistas: {}, editando: null, erro: "", multi: [] };
-    if (rasc) { S.bot.respostas = rasc.respostas || {}; S.bot.hist = rasc.hist || []; S.bot.vistas = rasc.vistas || {}; }
+    S.bot = { area: r.area, assunto: r.assunto, chamado: ini.chamado, def: ini.fluxo.definicao, respostas: {}, hist: [], vistas: {}, editando: null, erro: "", multi: [], anexos: {} };
+    if (rasc) { S.bot.respostas = rasc.respostas || {}; S.bot.hist = rasc.hist || []; S.bot.vistas = rasc.vistas || {}; S.bot.anexos = rasc.anexos || {}; }
     else {
       falaBot("Olá, " + primeiroNome() + "! Vou abrir seu pedido de " + r.assunto.nome.toLowerCase() + " com " + r.area.nome + ". São perguntas rápidas para o pedido chegar completo na pessoa certa.");
       if (!r.assunto.em_expediente) falaBot(r.assunto.msg_fora_horario || "A área está fora do horário agora. Seu pedido entra na fila e é atendido no próximo expediente.", "aviso");
@@ -286,6 +287,10 @@
     try {
       var c = await api.enviarRespostas(b.chamado.id, M.paraEnviar(b.def, b.respostas));
       lsSet(chaveRasc(b.chamado.id), null);
+      var nos = (b.def.nos || []).filter(function (n) { return n.campo === "arquivo" && b.anexos[n.chave] && b.respostas[n.chave]; });
+      for (var i = 0; i < nos.length; i++) {
+        try { await api.enviarMensagem(c.id, nos[i].rotulo_resumo || nos[i].rotulo, b.anexos[nos[i].chave]); } catch (eA) { toast("Não foi possível anexar " + (b.anexos[nos[i].chave].nome || "o arquivo") + ". Envie de novo pela conversa.", "erro"); }
+      }
       S.bot = null; S.filtro = "abertos"; S.filtroManual = false;
       trocarHash("#/c/" + c.id, true);
       await abrirChamado(c.id);
@@ -393,8 +398,27 @@
     o = o || {};
     if (cls === "sis") return '<div class="msg sis"><span>' + esc(texto) + "</span></div>";
     return '<div class="msg ' + cls + (o.cls ? " " + o.cls : "") + '"><div class="balao">' + (o.rotulo ? '<span class="quem">' + esc(o.rotulo) + "</span>" : "") +
-      '<span class="txt">' + esc(texto).replace(/\n/g, "<br>") + "</span>" + (o.ajuda ? '<span class="ajuda">' + esc(o.ajuda) + "</span>" : "") +
+      (o.anexo || "") + (texto ? '<span class="txt">' + esc(texto).replace(/\n/g, "<br>") + "</span>" : "") + (o.ajuda ? '<span class="ajuda">' + esc(o.ajuda) + "</span>" : "") +
       '<span class="meta">' + esc(hora) + (o.chk || "") + "</span></div></div>";
+  }
+  /* Anexo na bolha: foto aparece em miniatura; outros arquivos viram um botão para abrir. */
+  function htmlAnexo(m) {
+    if (!m.anexo_path) return "";
+    var nome = m.anexo_nome || "anexo";
+    if (/^image\//.test(m.anexo_mime || "") && !/hei[cf]/.test(m.anexo_mime || ""))
+      return '<button type="button" class="anexo-img" data-anexo="' + esc(m.anexo_path) + '" aria-label="Abrir foto ' + esc(nome) + '"><img alt="" data-img="' + esc(m.anexo_path) + '"></button>';
+    var ext = (nome.split(".").pop() || "").toUpperCase().slice(0, 4);
+    return '<button type="button" class="anexo-arq" data-anexo="' + esc(m.anexo_path) + '"><span class="anexo-ic">' + esc(ext || "ARQ") + '</span><span class="anexo-nome">' + esc(nome) + "</span></button>";
+  }
+  function carregarMiniaturas() {
+    if (!api.linkArquivo) return;
+    $("timeline").querySelectorAll("img[data-img]:not([src])").forEach(function (img) {
+      api.linkArquivo(img.getAttribute("data-img")).then(function (u) { img.src = u; }).catch(function () { img.closest(".anexo-img").classList.add("falhou"); });
+    });
+  }
+  function abrirAnexo(path) {
+    var w = window.open("", "_blank");
+    api.linkArquivo(path).then(function (u) { if (w) w.location = u; else location.href = u; }).catch(function (e) { if (w) w.close(); falha(e); });
   }
   function chk(estado) {
     if (estado === "enviando") return ' <span class="chk" aria-label="Enviando">✓</span>';
@@ -411,6 +435,7 @@
     var tl = $("timeline"), perto = tl.scrollHeight - tl.scrollTop - tl.clientHeight < 140;
     tl.innerHTML = S.bot ? htmlBot() : S.conv ? htmlChamado() : "";
     if (rolarFim || perto) tl.scrollTop = tl.scrollHeight;
+    carregarMiniaturas();
   }
   function htmlBot() {
     var b = S.bot, ult = { v: "" }, h = "";
@@ -429,8 +454,8 @@
       h += dia(m.criada_em, ult);
       var hora = M.horaCurta(m.criada_em);
       if (m.autor === "bot" && c.resumo && m.conteudo === c.resumo) h += htmlResumo(c.resumo_itens && c.resumo_itens.length ? c.resumo_itens : M.resumoDeTexto(c.resumo), false);
-      else if (m.autor === "solicitante") h += bolha("eu", m.conteudo || (m.anexo_nome ? "📎 " + m.anexo_nome : ""), hora, { chk: chk(m.lida_em ? "lida" : "enviada") });
-      else if (m.autor === "atendente") h += bolha("ele", m.conteudo || (m.anexo_nome ? "📎 " + m.anexo_nome : ""), hora, { rotulo: m.atendente || (c.atendente && c.atendente.nome) || "Atendente" });
+      else if (m.autor === "solicitante") h += bolha("eu", m.conteudo || "", hora, { chk: chk(m.lida_em ? "lida" : "enviada"), anexo: htmlAnexo(m) });
+      else if (m.autor === "atendente") h += bolha("ele", m.conteudo || "", hora, { rotulo: m.atendente || (c.atendente && c.atendente.nome) || "Atendente", anexo: htmlAnexo(m) });
       else if (m.autor === "bot") h += bolha("bot", m.conteudo, hora, { rotulo: "Assistente" });
       else h += bolha("sis", m.conteudo, hora);
     });
@@ -470,7 +495,8 @@
       h = '<div class="comp-acoes"><button type="button" class="btn btn-sec' + (S.confirma === "fluxo" ? " perigo" : "") + '" id="btn-cancelar-fluxo">' +
         (S.confirma === "fluxo" ? "Confirmar: descartar" : "Descartar") + '</button><button type="button" class="btn btn-verde" id="btn-enviar-pedido">Enviar pedido</button></div>';
     } else if (modo === "texto") {
-      h = '<div class="comp-linha"><textarea id="in-msg" rows="1" maxlength="2000" placeholder="Mensagem" enterkeyhint="send" aria-label="Mensagem"></textarea>' +
+      h = '<div class="comp-linha"><button type="button" class="btn-clipe" id="btn-clipe" aria-label="Anexar foto ou arquivo" title="Anexar foto ou arquivo">📎</button>' +
+        '<input type="file" id="in-arq" multiple accept="' + ACEITA + '" hidden><textarea id="in-msg" rows="1" maxlength="2000" placeholder="Mensagem" enterkeyhint="send" aria-label="Mensagem"></textarea>' +
         '<button type="button" class="btn-enviar" id="btn-enviar" aria-label="Enviar">➤</button></div>' +
         '<div class="comp-dica">' + (ehCelular() ? "Toque em ➤ para enviar" : "Enter envia · Shift+Enter pula linha") +
         (REAL ? "" : ' · Prévia: <button type="button" class="link" data-sim="aguardar">atendente pede informação</button> <button type="button" class="link" data-sim="encerrar">atendente encerra</button>') + "</div>";
@@ -506,8 +532,11 @@
       }).join("") + '</div><div class="comp-acoes">' + pular + '<button type="button" class="btn btn-prim" id="btn-multi"' + (b.multi.length || !p.obrigatorio ? "" : " disabled") + ">Confirmar" + (b.multi.length ? " (" + b.multi.length + ")" : "") + "</button></div>";
     }
     if (p.campo === "arquivo") {
-      return '<div class="comp-sub">O envio de foto pelo app chega na próxima versão. Pule esta etapa e, se precisar, avise na conversa que o atendente indica como enviar.</div>' +
-        '<div class="comp-acoes"><button type="button" class="btn btn-sec" id="btn-pular" data-foco>Pular</button></div>';
+      var enviando = b.subindo;
+      return erro + '<input type="file" id="in-arq-fluxo" accept="' + ACEITA + '" hidden>' +
+        '<div class="comp-acoes">' + pular + '<button type="button" class="btn btn-prim" id="btn-arq-fluxo" data-foco' + (enviando ? " disabled" : "") + ">" +
+        (enviando ? "Enviando…" : "📷 Tirar foto ou escolher arquivo") + "</button></div>" +
+        '<div class="comp-dica">Foto, PDF, Word ou Excel · até 20 MB' + (p.obrigatorio ? " · Obrigatório" : "") + "</div>";
     }
     var tipo = p.campo === "data" ? "date" : "text";
     var im = M.soNumeros(p) ? "numeric" : p.campo === "numero" ? "decimal" : "text";
@@ -533,6 +562,8 @@
     if (t.closest("#btn-enviar-pedido")) { enviarPedido(t.closest("button")); return; }
     if (t.closest("#btn-cancelar-fluxo")) { if (S.confirma !== "fluxo") { S.confirma = "fluxo"; renderCompositor(true); } else cancelarFluxo(); return; }
     if (t.closest("#btn-enviar")) { enviarTexto(); return; }
+    if (t.closest("#btn-clipe")) { $("in-arq").click(); return; }
+    if (t.closest("#btn-arq-fluxo")) { $("in-arq-fluxo").click(); return; }
     var n = t.closest("[data-nota]"); if (n) { S.nota = Number(n.getAttribute("data-nota")); var cm = $("in-coment").value; renderCompositor(true); $("in-coment").value = cm; return; }
     if (t.closest("#btn-avaliar")) { enviarAvaliacao(t.closest("button")); return; }
     if (t.closest("#btn-novo-2")) { ir("#/novo"); return; }
@@ -557,7 +588,14 @@
       if (S.bot.erro) { S.bot.erro = ""; var er = $("compositor").querySelector(".comp-erro"); if (er) er.remove(); e.target.classList.remove("invalido"); }
     }
   });
-  $("timeline").addEventListener("click", function (e) { var c = e.target.closest("[data-corrigir]"); if (c) corrigir(c.getAttribute("data-corrigir")); });
+  $("timeline").addEventListener("click", function (e) {
+    var c = e.target.closest("[data-corrigir]"); if (c) { corrigir(c.getAttribute("data-corrigir")); return; }
+    var a = e.target.closest("[data-anexo]"); if (a) abrirAnexo(a.getAttribute("data-anexo"));
+  });
+  $("compositor").addEventListener("change", function (e) {
+    if (e.target.id === "in-arq") { var fs = Array.prototype.slice.call(e.target.files || []); e.target.value = ""; enviarArquivos(fs); }
+    if (e.target.id === "in-arq-fluxo") { var f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) anexarNoFluxo(f); }
+  });
   $("conv-status").addEventListener("click", async function (e) {
     if (!e.target.closest("#btn-cancelar-ch")) return;
     if (S.confirma !== "cancelar") { S.confirma = "cancelar"; renderStatus(); return; }
@@ -566,6 +604,32 @@
   });
   $("conv-voltar").addEventListener("click", function () { ir("#/"); });
 
+  function arquivoOk(f) {
+    if (f.size > 20 * 1024 * 1024) { toast(f.name + ": arquivo grande demais (máximo 20 MB).", "erro"); return false; }
+    return true;
+  }
+  async function enviarArquivos(fs) {
+    if (!S.conv || !fs.length) return;
+    var c = S.conv, txt = $("in-msg") ? $("in-msg").value.trim() : "";
+    for (var i = 0; i < fs.length; i++) {
+      var f = fs[i]; if (!arquivoOk(f)) continue;
+      var pend = { chamado: c.id, texto: "📎 " + f.name + " (enviando…)", em: new Date().toISOString() };
+      S.pendentes.push(pend); renderTimeline(true);
+      try {
+        var anexo = await api.enviarArquivo(c.id, f);
+        await api.enviarMensagem(c.id, i === 0 ? txt : "", anexo);
+        if (i === 0 && txt && $("in-msg")) { $("in-msg").value = ""; ajustarAltura($("in-msg")); lsSet(chaveMsg(), null); }
+      } catch (e) { falha(e); }
+      S.pendentes = S.pendentes.filter(function (p) { return p !== pend; });
+    }
+    if (S.conv && S.conv.id === c.id) { S.assinatura = ""; await atualizarConversa(); renderTimeline(true); }
+  }
+  async function anexarNoFluxo(f) {
+    var b = S.bot, p = perguntaAtual(); if (!b || !p || !arquivoOk(f)) return;
+    b.subindo = true; b.erro = ""; renderCompositor(true);
+    try { var anexo = await api.enviarArquivo(b.chamado.id, f); b.anexos[p.chave] = anexo; b.subindo = false; responder("📎 " + anexo.nome); }
+    catch (e) { b.subindo = false; b.erro = e.message || "Não foi possível enviar o arquivo."; renderCompositor(true); }
+  }
   async function enviarTexto() {
     var im = $("in-msg"), txt = im.value.trim(); if (!txt || !S.conv) return;
     var c = S.conv, pend = { chamado: c.id, texto: txt, em: new Date().toISOString() };

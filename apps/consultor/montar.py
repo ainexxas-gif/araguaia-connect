@@ -25,7 +25,7 @@ if URL and not re.fullmatch(r"https://[a-z0-9]+\.supabase\.co", URL):
     sys.exit("ERRO: SUPABASE_URL inválida.")
 
 PERMITIDOS = [URL] if URL else []
-CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:" + ((' ' + URL) if URL else '') + "; "
        f"connect-src 'self'{(' ' + URL + ' ' + URL.replace('https://', 'wss://')) if URL else ''}; manifest-src 'self'; worker-src 'self'; "
        "base-uri 'none'; form-action 'none'; object-src 'none'")
 

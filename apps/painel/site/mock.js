@@ -265,7 +265,7 @@ var API={
     if(!txt(p.p_conteudo)&&!p.p_anexo)throw erro("23514","Mensagem vazia.");
     if(!p.p_interna){if(c.status==="na_fila"){c.atendente_id=a.id;c.status="em_atendimento";c.assumido_em=c.assumido_em||iso(Date.now());evento(c,"assumido",null,null,null,null,a.id);}
       else if(c.atendente_id!==a.id&&a.papel==="atendente")throw erro("42501","Este chamado está com outro atendente.");}
-    var m=msg(c,"atendente",txt(p.p_conteudo),{atendente_id:a.id,interna:!!p.p_interna});
+    var an=p.p_anexo||{};var m=msg(c,"atendente",txt(p.p_conteudo)||null,{atendente_id:a.id,interna:!!p.p_interna,anexo_path:an.path,anexo_nome:an.nome,anexo_mime:an.mime,tipo:an.path?(/^image\//.test(an.mime||"")?"imagem":"arquivo"):"texto"});
     if(!p.p_interna)simularResposta(c);
     return {id:m.id,autor:"atendente",criada_em:m.criada_em};},
   ca_marcar_lidas:function(p){var c=chamado(p.p_chamado),n=0;DB.mensagens.forEach(function(m){if(m.chamado_id===c.id&&!m.lida_em&&m.autor==="solicitante"){m.lida_em=iso(Date.now());n++;}});return n;},

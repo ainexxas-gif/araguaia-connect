@@ -5,6 +5,7 @@
 (function (g) {
   "use strict";
   var CHAVE = "ld_mock_v4";
+  var arquivosMock = {};
   var M = g.Motor;
   var FLUXOS = g.FLUXOS_PREVIA || {};
 
@@ -213,15 +214,23 @@
       });
     },
     chamado: async function (id) { var c = meu(id); gravar(); return json(c, true); },
-    enviarMensagem: async function (id, conteudo) {
+    enviarArquivo: async function (id, arquivo) {
+      exige(); await espera(300);
+      var path = id + "/" + Date.now().toString(36) + "-" + (arquivo.name || "arquivo");
+      arquivosMock[path] = URL.createObjectURL(arquivo);
+      return { path: path, nome: arquivo.name || "arquivo", mime: arquivo.type || "" };
+    },
+    linkArquivo: async function (path) { if (!arquivosMock[path]) throw erro("Anexo de exemplo (só existe na prévia).", "P0001"); return arquivosMock[path]; },
+    enviarMensagem: async function (id, conteudo, anexo) {
       exige(); await espera(200);
       var c = meu(id);
       if (c.status === "encerrado" || c.status === "desistiu") throw erro("Este chamado está encerrado. Abra um novo pelo menu.", "23514");
       if (c.status === "bot") throw erro("Termine de responder as perguntas antes de conversar.", "23514");
       var t = String(conteudo || "").trim();
-      if (!t) throw erro("Mensagem vazia.", "23514");
+      if (!t && !anexo) throw erro("Mensagem vazia.", "23514");
       if (c.status === "aguardando_solicitante") c.status = "em_atendimento";
-      var m = msg(c, "solicitante", t);
+      var m = msg(c, "solicitante", t || null);
+      if (anexo) { m.anexo_path = anexo.path; m.anexo_nome = anexo.nome; m.anexo_mime = anexo.mime; m.tipo = /^image\//.test(anexo.mime) ? "imagem" : "arquivo"; }
       if (c.status === "em_atendimento") c._ev.push({ em: emSeg(1), tipo: "lida" }, { em: emSeg(1.5), tipo: "digitando", ate: emSeg(4) }, { em: emSeg(4), tipo: "resposta" });
       gravar();
       return { id: m.id, autor: m.autor, criada_em: m.criada_em };

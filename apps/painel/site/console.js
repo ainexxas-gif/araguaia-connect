@@ -135,11 +135,39 @@ function htmlEvento(e){
   var mot=e.motivo&&["encerrado","aguardando_solicitante"].indexOf(e.tipo)<0?" · “"+e.motivo+"”":"";
   return '<div class="msg sis">'+A.hora(e.criado_em)+' · <b>'+esc(t)+'</b>'+(det?" · "+esc(det):"")+esc(mot)+'</div>';
 }
+function htmlAnexo(m){
+  if(!m.anexo_path)return "";var nome=m.anexo_nome||"anexo";
+  if(/^image\//.test(m.anexo_mime||"")&&!/hei[cf]/.test(m.anexo_mime||""))
+    return '<button type="button" class="anexo-img" data-a="anexo" data-p="'+esc(m.anexo_path)+'" title="Abrir '+esc(nome)+'"><img alt="'+esc(nome)+'" data-img="'+esc(m.anexo_path)+'"></button>';
+  var ext=(nome.split(".").pop()||"").toUpperCase().slice(0,4);
+  return '<button type="button" class="anexo-arq" data-a="anexo" data-p="'+esc(m.anexo_path)+'"><span class="anexo-ic">'+esc(ext||"ARQ")+'</span><span class="anexo-nome">'+esc(nome)+'</span></button>';
+}
+function miniaturas(el){
+  $$("img[data-img]:not([src])",el).forEach(function(img){
+    A.linkArquivo(img.getAttribute("data-img")).then(function(u){img.src=u;}).catch(function(){img.parentNode.classList.add("falhou");});});
+}
+function abrirAnexo(p){
+  var w=window.open("","_blank");
+  A.linkArquivo(p).then(function(u){if(w)w.location=u;else location.href=u;}).catch(function(e){if(w)w.close();A.toast(A.traduz(e),"erro");});
+}
+async function enviarArquivos(fs){
+  var d=S.det;if(!d||!fs.length)return;var modo=S.modo,tx=$("#txMsg"),t=tx?tx.value.trim():"";
+  for(var i=0;i<fs.length;i++){
+    var f=fs[i];
+    d.mensagens.push({id:0,autor:"atendente",atendente:A.eu.nome,conteudo:"📎 "+f.name+" (enviando…)",interna:modo==="nota",criada_em:new Date().toISOString()});atualizaMsgs();
+    try{
+      var anexo=await A.enviarArquivo(d.id,f);
+      await A.rpc("ca_enviar_mensagem",{p_chamado:d.id,p_conteudo:i===0&&t?t:null,p_anexo:anexo,p_interna:modo==="nota"});
+      if(i===0&&t&&tx){tx.value="";tx.style.height="auto";A.ls.del("cai.rasc::"+A.eu.email+"::"+d.id);}
+    }catch(e){A.toast(A.traduz(e),"erro");}
+  }
+  await carregarLista();carregarDet();
+}
 function htmlMsg(m){
   if(m.autor==="sistema")return '<div class="msg sis">'+esc(m.conteudo)+'</div>';
   var cls=m.interna?"nota":m.autor==="atendente"?"eu":m.autor==="bot"?"bot":"";
   var quem=m.interna?"Nota interna · "+(m.atendente||""):m.autor==="bot"?"Assistente":m.autor==="atendente"?(m.atendente||"Atendente"):S.det.solicitante.nome;
-  var anexo=m.anexo_path?'<div class="anexo">📎 '+esc(m.anexo_nome||"anexo")+'</div>':"";
+  var anexo=htmlAnexo(m);
   var chk=m.autor==="atendente"&&!m.interna?' <span class="chk'+(m.lida_em?" lida":"")+'" title="'+(m.lida_em?"Lida":"Entregue")+'">✓✓</span>':"";
   return '<div class="msg '+cls+'"><div class="au">'+esc(quem)+'</div>'+esc(m.conteudo||"")+anexo+'<div class="hr">'+A.hora(m.criada_em)+chk+'</div></div>';
 }
@@ -160,7 +188,7 @@ function desenhaConversa(){
       (dono?'<button data-m="pedir" class="'+(S.modo==="pedir"?"sel":"")+'" title="Envia a pergunta e marca o chamado como aguardando o consultor">Pedir informação</button>':"")+
       '<button data-m="nota" class="'+(S.modo==="nota"?"sel":"")+'" title="Só atendentes veem">Nota interna</button></div>'+
       '<div class="rapidas">'+rap.map(function(r){return '<button data-a="rapida" data-t="'+esc(r.texto)+'" title="'+esc(r.atalho+" · "+r.texto)+'">'+esc(r.titulo)+'</button>';}).join("")+'</div>'+
-      '<div class="linha"><textarea id="txMsg" rows="1" placeholder="Escreva a resposta. Digite / para respostas rápidas" enterkeyhint="send" aria-label="Mensagem"></textarea><button class="bt pri" id="btEnviar" data-a="enviar">Enviar</button></div>'+
+      '<div class="linha"><button type="button" class="bt clipe" data-a="clipe" title="Anexar foto ou arquivo" aria-label="Anexar foto ou arquivo">📎</button><input type="file" id="arqMsg" multiple accept="image/*,application/pdf,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt" hidden><textarea id="txMsg" rows="1" placeholder="Escreva a resposta. Digite / para respostas rápidas" enterkeyhint="send" aria-label="Mensagem"></textarea><button class="bt pri" id="btEnviar" data-a="enviar">Enviar</button></div>'+
       '<div class="ajuda" id="dicaEnter">Enter envia · Shift+Enter pula linha</div></div>';
     if(!dono)rodape=rodape.replace('<div class="cv-comp">','<div class="cv-comp"><div class="ajuda">Em atendimento com <b>'+esc(d.atendente?d.atendente.nome:"")+'</b>. Como supervisor, sua resposta aparece para o consultor com o seu nome.</div>');
   }else if(d.status==="na_fila"){
@@ -178,7 +206,8 @@ function desenhaConversa(){
     '<div class="cv-acoes">'+acoes+'<button class="bt btInf" data-a="info">Detalhes</button></div></div>'+
     '<div class="cv-msgs" id="cvMsgs"></div>'+rodape;
   S.assin="";atualizaMsgs();
-  var tx=$("#txMsg");
+  var tx=$("#txMsg"),arq=$("#arqMsg");
+  if(arq)arq.addEventListener("change",function(){var fs=Array.prototype.slice.call(arq.files||[]);arq.value="";enviarArquivos(fs);});
   if(tx){
     var chave="cai.rasc::"+A.eu.email+"::"+d.id,r=A.ls.get(chave);if(r)tx.value=r;
     var toque=window.matchMedia&&matchMedia("(pointer:coarse)").matches;
@@ -199,14 +228,16 @@ function desenhaConversa(){
 function atalho(v){return (A.cad.respostas_rapidas||[]).find(function(r){return r.atalho.indexOf(v)===0&&v.length>1;});}
 function atualizaMsgs(){
   var d=S.det,el=$("#cvMsgs");if(!el)return;
-  var it=itens(d),assin=it.length+"|"+d.mensagens.filter(function(m){return m.lida_em;}).length;if(assin===S.assin)return;
+  var it=itens(d),assin=it.length+"|"+d.mensagens.map(function(m){return m.id;}).join(",")+"|"+d.mensagens.filter(function(m){return m.lida_em;}).length;if(assin===S.assin)return;
   var noFim=el.scrollHeight-el.scrollTop-el.clientHeight<60||!S.assin;S.assin=assin;
   var ult="",h=htmlColeta(d);
   it.forEach(function(x){var dia=A.data(x.em);if(dia!==ult){ult=dia;h+='<div class="msg sis dia"><b>'+(A.ehHoje(x.em)?"Hoje":dia)+'</b></div>';}h+=x.e?htmlEvento(x.e):htmlMsg(x.m);});
-  el.innerHTML=h;if(noFim)el.scrollTop=el.scrollHeight;
+  el.innerHTML=h;if(noFim)el.scrollTop=el.scrollHeight;miniaturas(el);
 }
 function cliqueConversa(e){
   var b=e.target.closest("[data-a]");if(!b)return;var a=b.getAttribute("data-a");
+  if(a==="anexo"){abrirAnexo(b.getAttribute("data-p"));return;}
+  if(a==="clipe"){$("#arqMsg").click();return;}
   if(a==="voltar"){$("#cons").classList.remove("verCv","verInf");S.sel=null;S.det=null;A.subHash("");desenhaLista();}
   else if(a==="info")$("#cons").classList.toggle("verInf");
   else if(a==="assumir")assumir();else if(a==="repassar")repassar();else if(a==="transferir")transferir();

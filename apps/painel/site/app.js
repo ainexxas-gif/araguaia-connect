@@ -99,6 +99,29 @@ A.rpc=async function(nome,args,tentou){
   if(!r.ok){var e=new Error((j&&j.message)||"Erro");e.code=j&&j.code;throw e;}
   return j;
 };
+/* ---------- anexos (Storage, bucket privado central-atendimento, pasta = id do chamado) ---------- */
+var BUCKET="central-atendimento",linkCache={},arqMock={};
+async function tokenAtual(){var s=lerSessao();if(s&&s.expira&&s.expira-Date.now()<60000){try{await renovar();s=lerSessao();}catch(e){}}return s?s.access_token:CFG.chave;}
+A.enviarArquivo=async function(chamadoId,arq){
+  if(arq.size>20*1024*1024)throw new Error(arq.name+": arquivo grande demais (máximo 20 MB).");
+  var nome=String(arq.name||"arquivo").replace(/[^\w.\-]+/g,"_").slice(-80);
+  var path=chamadoId+"/"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+"-"+nome;
+  if(window.MOCK){arqMock[path]=URL.createObjectURL(arq);return {path:path,nome:arq.name||nome,mime:arq.type||""};}
+  var r=await fetch(CFG.supabaseUrl+"/storage/v1/object/"+BUCKET+"/"+encodeURI(path),{method:"POST",
+    headers:{"apikey":CFG.chave,"Authorization":"Bearer "+(await tokenAtual()),"Content-Type":arq.type||"application/octet-stream","x-upsert":"false"},body:arq});
+  if(!r.ok){var j=await r.json().catch(function(){return {};});
+    throw new Error(r.status===413||/size/i.test(j.message||"")?"Arquivo grande demais (máximo 20 MB).":/mime|type/i.test(j.message||"")?"Tipo de arquivo não aceito. Envie foto, PDF, Word ou Excel.":"Não foi possível enviar o arquivo. Tente de novo.");}
+  return {path:path,nome:arq.name||nome,mime:arq.type||""};
+};
+A.linkArquivo=async function(path){
+  if(window.MOCK){if(arqMock[path])return arqMock[path];throw new Error("Anexo de exemplo (só existe na prévia).");}
+  if(linkCache[path]&&linkCache[path].ate>Date.now())return linkCache[path].url;
+  var r=await fetch(CFG.supabaseUrl+"/storage/v1/object/sign/"+BUCKET+"/"+encodeURI(path),{method:"POST",
+    headers:{"apikey":CFG.chave,"Authorization":"Bearer "+(await tokenAtual()),"Content-Type":"application/json"},body:JSON.stringify({expiresIn:3600})});
+  var j=await r.json().catch(function(){return {};});
+  if(!r.ok||!j.signedURL)throw new Error("Não foi possível abrir o anexo.");
+  var u=CFG.supabaseUrl+"/storage/v1"+j.signedURL;linkCache[path]={url:u,ate:Date.now()+50*60000};return u;
+};
 A.sessaoExpirada=function(){gravarSessao(null);A.toast("Sua sessão expirou. Entre de novo.","erro");setTimeout(function(){location.reload();},1500);};
 /* chamada com feedback: trava a tela, mostra erro traduzido */
 A.acao=async function(nome,args,okMsg){
