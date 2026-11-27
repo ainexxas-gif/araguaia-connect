@@ -92,8 +92,8 @@
   async function comecar() {
     try { S.sessao = await api.sessao(); } catch (e) { S.sessao = null; if (e.codigo !== "28000") { mostrarLogin("ms", e.message); return; } }
     if (!S.sessao) { mostrarLogin("ms"); return; }
-    if (S.sessao.precisa_identificar) { mostrarLogin("mat"); return; }
-    if (!S.sessao.solicitante) { mostrarLogin("ms", "Este login é de atendente. Use o console da Central para atender; este app é para os consultores."); return; }
+    // Sem matrícula ligada ao login (inclusive quem também é atendente): pede a matrícula.
+    if (S.sessao.precisa_identificar || !S.sessao.solicitante) { mostrarLogin("mat"); return; }
     await entrarNoApp();
   }
   async function entrarNoApp() {
