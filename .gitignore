@@ -1,0 +1,10 @@
+.env
+.env.*
+config.js
+node_modules/
+dist/
+carga/
+*.xlsx
+*.csv
+shots/
+.DS_Store
