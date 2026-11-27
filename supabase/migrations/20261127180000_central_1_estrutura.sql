@@ -324,12 +324,10 @@ do $$
 declare t text;
 begin
   foreach t in array array['areas','solicitantes','atendentes','filas','assuntos','chamados'] loop
-    execute format('drop trigger if exists %I on central_atendimento.%I', 'tg_'||t||'_atualizado', t);
-    execute format('create trigger %I before update on central_atendimento.%I for each row execute function central_atendimento.tg_atualizado_em()', 'tg_'||t||'_atualizado', t);
+    execute format('create or replace trigger %I before update on central_atendimento.%I for each row execute function central_atendimento.tg_atualizado_em()', 'tg_'||t||'_atualizado', t);
   end loop;
   foreach t in array array['areas','equipes_venda','solicitantes','atendentes','filas','fila_atendentes','horarios','feriados','assuntos','fluxos','respostas_rapidas','config'] loop
-    execute format('drop trigger if exists %I on central_atendimento.%I', 'tg_'||t||'_auditoria', t);
-    execute format('create trigger %I after insert or update or delete on central_atendimento.%I for each row execute function central_atendimento.tg_auditoria()', 'tg_'||t||'_auditoria', t);
+    execute format('create or replace trigger %I after insert or update or delete on central_atendimento.%I for each row execute function central_atendimento.tg_auditoria()', 'tg_'||t||'_auditoria', t);
   end loop;
 end $$;
 
@@ -346,8 +344,7 @@ begin
   where c.id = new.chamado_id;
   return new;
 end $$;
-drop trigger if exists tg_mensagens_chamado on mensagens;
-create trigger tg_mensagens_chamado after insert on mensagens for each row execute function central_atendimento.tg_mensagem_chamado();
+create or replace trigger tg_mensagens_chamado after insert on mensagens for each row execute function central_atendimento.tg_mensagem_chamado();
 
 -- ---------------------------------------------------------------------
 -- Segurança: RLS em tudo, nada liberado por padrão.
