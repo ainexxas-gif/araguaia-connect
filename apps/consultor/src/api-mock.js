@@ -253,7 +253,7 @@
       if (c.status !== "encerrado") throw erro("A avaliação abre quando o chamado for encerrado.", "23514");
       if (c.avaliacao) throw erro("Este chamado já foi avaliado.", "23505");
       nota = Number(nota);
-      if (!(nota >= 1 && nota <= 5)) throw erro("Escolha uma nota de 1 a 5.", "23514");
+      if (!(nota >= 1 && nota <= 10)) throw erro("Escolha uma nota de 1 a 10.", "23514");
       c.avaliacao = { nota: nota, comentario: String(comentario || "").trim() || null };
       gravar(); return json(c);
     },

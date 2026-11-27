@@ -198,7 +198,7 @@ function desenhaConversa(){
   }else{
     rodape='<div class="cv-aviso">'+(d.status==="desistiu"?"O consultor desistiu antes do atendimento.":'Encerrado em '+A.dataHora(d.encerrado_em)+' · <b>'+esc(A.nomeResultado(d.resultado))+'</b>'+
       (d.documento_numero?' · '+esc(d.documento_tipo||"Documento")+' '+esc(d.documento_numero):"")+
-      (d.avaliacao?' · <span class="estrelas" title="Avaliação '+d.avaliacao.nota+' de 5">'+"★".repeat(d.avaliacao.nota)+"☆".repeat(5-d.avaliacao.nota)+'</span>':' · Avaliação ainda não respondida'))+'</div>';
+      (d.avaliacao?' · Avaliação <b class="notaChip '+(d.avaliacao.nota>=9?"ok":d.avaliacao.nota>=7?"bom":d.avaliacao.nota>=5?"med":"ruim")+'">'+d.avaliacao.nota+' de 10</b>':' · Avaliação ainda não respondida'))+'</div>';
   }
   $("#cv").innerHTML=
     '<div class="cv-top"><button class="bt sm voltar" data-a="voltar">← Chamados</button>'+
@@ -330,7 +330,7 @@ function encerrar(){
     '<div class="fg"><label>Resultado</label><div class="escolhas" id="esRes" data-obr="escolha" data-msg="Escolha o resultado.">'+A.RESULTADOS.map(function(r){return '<button type="button" data-v="'+r[0]+'">'+esc(r[1])+'</button>';}).join("")+'</div><span class="obr">Obrigatório</span></div>'+
     '<div class="fg"><label for="mDoc">'+esc(rot)+'</label><input id="mDoc" inputmode="numeric" autocomplete="off" value="'+esc(d.documento_numero||docSugerido(d))+'" placeholder="Ex.: 4500123456"><span class="obr" id="obrDoc"></span></div>'+
     '<div class="fg"><label for="mObs">Observação do encerramento</label><textarea id="mObs" placeholder="O que foi feito, ou por que não foi possível"></textarea><span class="obr" id="obrObs"></span></div>'+
-    '<p class="ajuda">Ao encerrar, o consultor recebe no app a avaliação de 1 a 5.</p>',
+    '<p class="ajuda">Ao encerrar, o consultor recebe no app a avaliação de 1 a 10.</p>',
     rodape:'<button class="bt" data-x>Cancelar</button><button class="bt ok" id="okEnc">Encerrar</button>'});
   var es=$("#esRes",m.el);
   function regra(){var r=es.getAttribute("data-valor")||"";

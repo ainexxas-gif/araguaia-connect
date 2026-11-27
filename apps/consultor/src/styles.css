@@ -232,15 +232,16 @@ body.ocupado{cursor:progress}
 .avaliar{display:flex;flex-direction:column;gap:10px}
 .av-tit{font-weight:700;font-size:16px;text-align:center}
 .notas{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.nota{border:1.5px solid var(--borda);background:var(--card);border-radius:12px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px 2px}
+.notas-legenda{display:flex;justify-content:space-between;font-size:12px;color:var(--tx3);margin:4px 2px 0}
+.nota{border:1.5px solid var(--borda);background:var(--card);border-radius:12px;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px 2px}
 .nota strong{font-size:20px}
 .nota span{font-size:11.5px;color:var(--tx3);line-height:1.1;text-align:center}
 .nota.sel{border-color:transparent;color:#fff}
 .nota.sel span{color:#fff}
-.nota.n1.sel,.nota.n2.sel{background:#B3261E}
-.nota.n3.sel{background:#A06A00}
-.nota.n4.sel{background:#4A8C00}
-.nota.n5.sel{background:#2F6B00}
+.nota.ruim.sel{background:#B3261E}
+.nota.medio.sel{background:#A06A00}
+.nota.bom.sel{background:#4A8C00}
+.nota.otimo.sel{background:#2F6B00}
 .avaliar textarea{border:1px solid var(--borda);border-radius:12px;padding:10px 14px;background:var(--card2);font-size:16px;resize:vertical;min-height:58px}
 
 /* ---------- Toast ---------- */

@@ -473,7 +473,7 @@
     return '<div class="encerrado-card"><div class="enc-tit">Atendimento encerrado</div><dl><div><dt>Resultado</dt><dd>' + esc(M.RESULTADOS[c.resultado] || c.resultado || "—") + "</dd></div>" +
       (c.documento_numero ? "<div><dt>Documento</dt><dd>" + esc((c.documento_tipo || "") + " " + c.documento_numero) + "</dd></div>" : "") +
       "<div><dt>Atendido por</dt><dd>" + esc(c.atendente ? c.atendente.nome : "—") + "</dd></div></dl>" + t +
-      (c.avaliacao ? '<div class="avaliado">Sua avaliação: <strong>' + c.avaliacao.nota + " de 5</strong></div>" : "") + "</div>";
+      (c.avaliacao ? '<div class="avaliado">Sua avaliação: <strong>' + c.avaliacao.nota + " de 10</strong></div>" : "") + "</div>";
   }
 
   /* ---------- Compositor (área de resposta) ---------- */
@@ -501,9 +501,9 @@
         '<div class="comp-dica">' + (ehCelular() ? "Toque em ➤ para enviar" : "Enter envia · Shift+Enter pula linha") +
         (REAL ? "" : ' · Prévia: <button type="button" class="link" data-sim="aguardar">atendente pede informação</button> <button type="button" class="link" data-sim="encerrar">atendente encerra</button>') + "</div>";
     } else if (modo === "avaliar") {
-      var rot = ["", "Muito ruim", "Ruim", "Regular", "Bom", "Ótimo"];
-      h = '<div class="avaliar"><div class="av-tit">Como foi este atendimento?</div><div class="notas" role="radiogroup" aria-label="Nota de 1 a 5">' +
-        [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" role="radio" aria-checked="' + (S.nota === n) + '" class="nota n' + n + (S.nota === n ? " sel" : "") + '" data-nota="' + n + '"><strong>' + n + "</strong><span>" + rot[n] + "</span></button>"; }).join("") +
+      h = '<div class="avaliar"><div class="av-tit">Como foi este atendimento? Dê uma nota de 1 a 10</div><div class="notas" role="radiogroup" aria-label="Nota de 1 a 10">' +
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (n) { return '<button type="button" role="radio" aria-checked="' + (S.nota === n) + '" aria-label="Nota ' + n + '" class="nota ' + (n <= 4 ? "ruim" : n <= 6 ? "medio" : n <= 8 ? "bom" : "otimo") + (S.nota === n ? " sel" : "") + '" data-nota="' + n + '"><strong>' + n + "</strong></button>"; }).join("") +
+        '</div><div class="notas-legenda"><span>1 · Muito ruim</span><span>10 · Excelente</span>' +
         '</div><textarea id="in-coment" rows="2" maxlength="500" placeholder="Quer deixar um comentário? Ajuda a melhorar a Central." aria-label="Comentário"></textarea>' +
         '<button type="button" class="btn btn-prim btn-largo" id="btn-avaliar"' + (S.nota ? "" : " disabled") + ">Enviar avaliação</button></div>";
     } else if (modo === "fim") {
