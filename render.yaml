@@ -11,9 +11,9 @@ services:
     autoDeploy: true
     envVars:
       - key: SUPABASE_URL
-        value: https://hajteevwnliqykvlsucb.supabase.co
+        value: https://cnbicexublaxoctsxjgq.supabase.co
       - key: SUPABASE_KEY
-        value: sb_publishable_IWLDS9ucg41QuX0X6z8BJg_sIBYMwDb
+        value: sb_publishable_goK2pfeTHlSnJWFsVF4-Bg_lCOYvhuT
     headers:
       - path: /*
         name: X-Frame-Options
@@ -29,7 +29,7 @@ services:
         value: no-cache
       - path: /*
         name: Content-Security-Policy
-        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://hajteevwnliqykvlsucb.supabase.co wss://hajteevwnliqykvlsucb.supabase.co; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://cnbicexublaxoctsxjgq.supabase.co wss://cnbicexublaxoctsxjgq.supabase.co; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
 
   - type: web
     name: araguaia-connect-painel
@@ -40,9 +40,9 @@ services:
     autoDeploy: true
     envVars:
       - key: SUPABASE_URL
-        value: https://hajteevwnliqykvlsucb.supabase.co
+        value: https://cnbicexublaxoctsxjgq.supabase.co
       - key: SUPABASE_KEY
-        value: sb_publishable_IWLDS9ucg41QuX0X6z8BJg_sIBYMwDb
+        value: sb_publishable_goK2pfeTHlSnJWFsVF4-Bg_lCOYvhuT
     headers:
       - path: /*
         name: X-Frame-Options
@@ -58,4 +58,4 @@ services:
         value: no-cache
       - path: /*
         name: Content-Security-Policy
-        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://hajteevwnliqykvlsucb.supabase.co wss://hajteevwnliqykvlsucb.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://cnbicexublaxoctsxjgq.supabase.co wss://cnbicexublaxoctsxjgq.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
