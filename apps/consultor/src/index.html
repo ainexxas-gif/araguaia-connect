@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="__CSP__">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#003D7C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="__APP_CURTO__">
+<meta name="mobile-web-app-capable" content="yes">
+<title>__APP_NOME__ · Araguaia</title>
+<link rel="icon" type="image/svg+xml" href="icone.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="icone-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icone-180-ios.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css?v=__VERSAO__">
+</head>
+<body>
+<div id="app" class="vista-login">
+
+  <!-- LOGIN -->
+  <section id="tela-login" class="tela-login" aria-label="Entrar">
+    <div class="login-hero">
+      <div class="login-marca">ARAGUAIA</div>
+      <div class="login-titulo">
+        <span class="ico-produto">__ICONE_INLINE__</span>
+        <div>
+          <div class="sobre">Central do Consultor</div>
+          <h1>__APP_NOME__</h1>
+        </div>
+      </div>
+      <p class="login-prop">Peça o que precisa em poucos toques e fale direto com quem resolve.</p>
+      <div class="login-fatos">
+        <span>Escolha o assunto</span><span>Responda o essencial</span><span>Fale com a pessoa certa</span>
+      </div>
+    </div>
+    <div id="etapa-ms" class="login-form">
+      <button type="button" class="btn btn-ms btn-largo" id="btn-ms"><span class="ms-ico" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Entrar com a conta Araguaia</button>
+      <p class="login-nota">Use o mesmo e-mail e senha do Outlook e do Teams.</p>
+      <p class="campo-erro" id="err-ms" role="alert"></p>
+    </div>
+    <form id="form-mat" class="login-form" novalidate hidden>
+      <p class="login-passo">Falta só um passo, <strong id="mat-nome"></strong>. Informe sua matrícula para a Central saber quem você é e qual a sua equipe de venda. É só desta vez.</p>
+      <label for="in-matricula">Matrícula</label>
+      <input id="in-matricula" name="matricula" inputmode="numeric" autocomplete="off" enterkeyhint="go" maxlength="20" placeholder="Ex.: 104523">
+      <div class="campo-erro" id="err-matricula" role="alert"></div>
+      <button type="submit" class="btn btn-prim btn-largo" id="btn-mat">Continuar</button>
+      <button type="button" class="link" id="btn-mat-sair">Entrar com outra conta</button>
+    </form>
+  </section>
+
+  <!-- APLICAÇÃO -->
+  <header id="hdr" class="hdr" hidden>
+    <div class="hdr-esq">
+      <span class="hdr-marca">ARAGUAIA</span><span class="hdr-traco"></span>
+      <span class="ico-produto hdr-ico">__ICONE_INLINE__</span>
+      <div class="hdr-txt">
+        <div class="sobre">Central do Consultor</div>
+        <div class="hdr-titulo">__APP_NOME__</div>
+        <div class="hdr-ctx" id="hdr-ctx"></div>
+      </div>
+    </div>
+    <div class="hdr-acoes">
+      <button class="pilula" id="btn-tema" type="button" aria-label="Alternar tema">Escuro</button>
+      <button class="pilula" id="btn-sair" type="button">Sair</button>
+    </div>
+  </header>
+
+  <div id="faixa-previa" class="faixa-previa" hidden>Prévia com dados simulados · nada é gravado no banco</div>
+
+  <main id="corpo" class="corpo" hidden>
+    <!-- Lista de atendimentos (estilo WhatsApp) -->
+    <section id="pane-lista" class="pane pane-lista" aria-label="Meus atendimentos">
+      <div class="lista-topo">
+        <h2>Meus atendimentos</h2>
+        <input id="busca-lista" class="busca" type="search" placeholder="Buscar por assunto, protocolo ou documento" enterkeyhint="search" aria-label="Buscar atendimentos">
+        <div class="filtros" id="filtros-lista" role="tablist"></div>
+      </div>
+      <div id="lista-conv" class="lista-conv"></div>
+      <div class="lista-pe">
+        <button type="button" class="btn btn-verde btn-largo" id="btn-novo">+ Novo atendimento</button>
+      </div>
+    </section>
+
+    <!-- Painel principal: menu, assuntos ou conversa -->
+    <section id="pane-main" class="pane pane-main" aria-live="polite">
+      <div id="main-vazio" class="main-vazio">
+        <span class="ico-produto grande">__ICONE__</span>
+        <h2>Escolha um atendimento</h2>
+        <p>Abra um da lista ou comece um novo.</p>
+      </div>
+
+      <div id="view-menu" class="view" hidden>
+        <div class="barra">
+          <button type="button" class="voltar" id="menu-voltar">← Voltar</button>
+          <div class="barra-tit"><strong>Novo atendimento</strong><span>Com o que podemos ajudar?</span></div>
+        </div>
+        <div class="menu-corpo">
+          <input id="busca-assunto" class="busca" type="search" placeholder="Digite o que precisa (ex.: motorista, OV, boleto)" enterkeyhint="search" aria-label="Buscar assunto">
+          <div id="menu-resultado"></div>
+        </div>
+      </div>
+
+      <div id="view-conv" class="view view-conv" hidden>
+        <div class="barra">
+          <button type="button" class="voltar" id="conv-voltar">← Atendimentos</button>
+          <div class="avatar" id="conv-avatar"></div>
+          <div class="barra-tit"><strong id="conv-titulo"></strong><span id="conv-sub"></span></div>
+        </div>
+        <div id="conv-status" class="conv-status"></div>
+        <div id="timeline" class="timeline" tabindex="-1"></div>
+        <div id="compositor" class="compositor"></div>
+      </div>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="status" hidden></div>
+</div>
+<script src="config.js?v=__VERSAO__"></script>
+<script src="motor.js?v=__VERSAO__"></script>
+<script src="fluxos-previa.js?v=__VERSAO__"></script>
+<script src="api-mock.js?v=__VERSAO__"></script>
+<script src="api-supabase.js?v=__VERSAO__"></script>
+<script src="app.js?v=__VERSAO__"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+# Render Blueprint do Araguaia Connect: dois Static Sites irmãos no mesmo repositório.
+# Criar pelo painel do Render: New > Blueprint > este repositório (branch main).
+# SUPABASE_URL e SUPABASE_KEY: só a chave PUBLICÁVEL (sb_publishable_...). Os montar.py recusam outra.
+services:
+  - type: web
+    name: araguaia-connect
+    runtime: static
+    rootDir: apps/consultor
+    buildCommand: python3 montar.py
+    staticPublishPath: public
+    autoDeploy: true
+    envVars:
+      - key: SUPABASE_URL
+        value: https://cnbicexublaxoctsxjgq.supabase.co
+      - key: SUPABASE_KEY
+        value: sb_publishable_goK2pfeTHlSnJWFsVF4-Bg_lCOYvhuT
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: no-referrer
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://cnbicexublaxoctsxjgq.supabase.co wss://cnbicexublaxoctsxjgq.supabase.co; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
+
+  - type: web
+    name: araguaia-connect-painel
+    runtime: static
+    rootDir: apps/painel
+    buildCommand: python3 montar.py
+    staticPublishPath: public
+    autoDeploy: true
+    envVars:
+      - key: SUPABASE_URL
+        value: https://cnbicexublaxoctsxjgq.supabase.co
+      - key: SUPABASE_KEY
+        value: sb_publishable_goK2pfeTHlSnJWFsVF4-Bg_lCOYvhuT
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: no-referrer
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://cnbicexublaxoctsxjgq.supabase.co wss://cnbicexublaxoctsxjgq.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
